@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Kanit } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const kanit = Kanit({ 
+  subsets: ["latin", "thai"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-kanit",
+});
 
 export const metadata: Metadata = {
   title: "POS System",
@@ -16,15 +20,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="th">
-      <body className={inter.className}>
+    <html lang="th" className={kanit.variable}>
+      <body className={kanit.className}>
         {children}
-        <Toaster 
-          position="top-right" 
-          richColors 
-          closeButton
-          duration={3000}
-        />
+        <Toaster />
       </body>
     </html>
   );
