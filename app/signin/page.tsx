@@ -25,7 +25,7 @@ export default function SignInPage() {
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
       const tokenKey = process.env.NEXT_PUBLIC_TOKEN_KEY || "token";
-      
+
       const res = await axios.post(
         `${apiUrl}/api/user/signIn`,
         payload

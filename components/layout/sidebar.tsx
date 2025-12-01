@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -85,12 +86,25 @@ const reportItems = [
 
 export default function Sidebar() {
   const router = useRouter();
+  const pathname = usePathname();
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    router.push("/signin")
+    localStorage.removeItem("next_name");
+    localStorage.removeItem("next_user_id");
+    router.push("/signin");
     toast.success("ออกจากระบบสำเร็จ");
+  };
+
+  const isActive = (href: string) => {
+    // Exact match
+    if (pathname === href) {
+      return true;
+    }
+    // Check if pathname starts with href + "/" to avoid partial matches
+    // Example: /backoffice/food should not match /backoffice/food-type
+    return pathname.startsWith(href + "/");
   };
 
   return (
@@ -116,11 +130,17 @@ export default function Sidebar() {
           </p>
           {menuItems.map((item) => {
             const Icon = item.icon;
+            const active = isActive(item.href);
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-all duration-200"
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                  active
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                )}
               >
                 <Icon className="w-5 h-5" />
                 <span>{item.title}</span>
@@ -135,11 +155,17 @@ export default function Sidebar() {
           </p>
           {reportItems.map((item) => {
             const Icon = item.icon;
+            const active = isActive(item.href);
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-all duration-200"
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                  active
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                )}
               >
                 <Icon className="w-5 h-5" />
                 <span>{item.title}</span>
