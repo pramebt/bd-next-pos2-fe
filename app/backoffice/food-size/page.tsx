@@ -1,4 +1,410 @@
 // Food Size Page
+"use client";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Plus, Edit, Trash2, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import Modal from "@/components/shared/Mymodal";
 
+interface FoodSizeProps {
+  id: number;
+  name: string;
+  remark: string;
+  foodTypeId: number;
+  moneyAdded: number;
+  foodType?: {
+    id: number;
+    name: string;
+  };
+}
 
+interface FoodTypeProps {
+  id: number;
+  name: string;
+  remark: string;
+}
 
+const FoodSizePage = () => {
+  const [id, setId] = useState(0);
+  const [name, setName] = useState("");
+  const [remark, setRemark] = useState("");
+  const [foodTypes, setFoodTypes] = useState<FoodTypeProps[]>([]);
+  const [foodTypeId, setFoodTypeId] = useState<number>(0);
+  const [moneyAdded, setMoneyAdded] = useState<number>(0);
+  const [foodSizes, setFoodSizes] = useState<FoodSizeProps[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetchData();
+    fetchDataFoodType();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const response = await axios.get(`${apiUrl}/api/food-size/list`);
+      setFoodSizes(response.data.result || []);
+    } catch (error: any) {
+      toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูลขนาดอาหาร", {
+        description: error.message || "ไม่สามารถโหลดข้อมูลได้",
+      });
+    }
+  };
+
+  const fetchDataFoodType = async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const response = await axios.get(`${apiUrl}/api/food-type/list`);
+      setFoodTypes(response.data.result || []);
+    } catch (error: any) {
+      toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูลประเภทอาหาร", {
+        description: error.message || "ไม่สามารถโหลดข้อมูลได้",
+      });
+    }
+  };
+
+  const editFoodSize = (foodSize: FoodSizeProps) => {
+    setId(foodSize.id);
+    setName(foodSize.name);
+    setRemark(foodSize.remark || "");
+    setFoodTypeId(foodSize.foodTypeId);
+    setMoneyAdded(foodSize.moneyAdded);
+    setIsModalOpen(true);
+  };
+
+  const clearForm = () => {
+    setId(0);
+    setName("");
+    setRemark("");
+    setFoodTypeId(0);
+    setMoneyAdded(0);
+  };
+
+  const handleSave = async () => {
+    if (!name.trim()) {
+      toast.warning("กรุณากรอกชื่อขนาดอาหาร");
+      return;
+    }
+
+    if (foodTypeId === 0) {
+      toast.warning("กรุณาเลือกประเภทอาหาร");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const payload = {
+        name: name.trim(),
+        remark: remark.trim(),
+        foodTypeId: foodTypeId,
+        moneyAdded: moneyAdded || 0,
+        id: id,
+      };
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      if (id === 0) {
+        await axios.post(`${apiUrl}/api/food-size/create`, payload);
+        toast.success("เพิ่มขนาดอาหารสำเร็จ");
+      } else {
+        await axios.post(`${apiUrl}/api/food-size/update`, payload);
+        toast.success("แก้ไขขนาดอาหารสำเร็จ");
+      }
+      fetchData();
+      clearForm();
+      setIsModalOpen(false);
+    } catch (error: any) {
+      toast.error("เกิดข้อผิดพลาด", {
+        description:
+          error.response?.data?.message ||
+          error.message ||
+          "ไม่สามารถบันทึกข้อมูลได้",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      await axios.post(`${apiUrl}/api/food-size/delete`, { id: deleteId });
+      toast.success("ลบขนาดอาหารสำเร็จ");
+      fetchData();
+      setDeleteId(null);
+    } catch (error: any) {
+      toast.error("เกิดข้อผิดพลาด", {
+        description:
+          error.response?.data?.message ||
+          error.message ||
+          "ไม่สามารถลบข้อมูลได้",
+      });
+    }
+  };
+
+  const openAddModal = () => {
+    clearForm();
+    setIsModalOpen(true);
+  };
+
+  const getFoodTypeName = (foodTypeId: number) => {
+    const foodType = foodTypes.find((ft) => ft.id === foodTypeId);
+    return foodType?.name || "-";
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">จัดการขนาดอาหาร</h1>
+          <p className="text-muted-foreground mt-1">
+            เพิ่ม แก้ไข หรือลบขนาดอาหาร
+          </p>
+        </div>
+        <Button onClick={openAddModal} className="gap-2">
+          <Plus className="h-4 w-4" />
+          เพิ่มขนาดอาหาร
+        </Button>
+      </div>
+
+      {/* Modal for Add/Edit */}
+      <Modal
+        id="modalFoodSize"
+        title={id === 0 ? "เพิ่มขนาดอาหาร" : "แก้ไขขนาดอาหาร"}
+        modalSize="md"
+        description="กรุณากรอกข้อมูลขนาดอาหาร"
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+      >
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <label htmlFor="foodType" className="text-sm font-medium">
+              ประเภทอาหาร <span className="text-destructive">*</span>
+            </label>
+            <Select
+              value={foodTypeId.toString()}
+              onValueChange={(value) => setFoodTypeId(Number(value))}
+              disabled={isLoading}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="เลือกประเภทอาหาร" />
+              </SelectTrigger>
+              <SelectContent>
+                {foodTypes.map((foodType) => (
+                  <SelectItem key={foodType.id} value={foodType.id.toString()}>
+                    {foodType.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="name" className="text-sm font-medium">
+              ชื่อขนาดอาหาร <span className="text-destructive">*</span>
+            </label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="กรุณากรอกชื่อขนาดอาหาร"
+              disabled={isLoading}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="moneyAdded" className="text-sm font-medium">
+              ราคาเพิ่มเติม (บาท)
+            </label>
+            <Input
+              id="moneyAdded"
+              type="number"
+              value={moneyAdded}
+              onChange={(e) => setMoneyAdded(Number(e.target.value) || 0)}
+              placeholder="0"
+              min="0"
+              step="0.01"
+              disabled={isLoading}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="remark" className="text-sm font-medium">
+              หมายเหตุ
+            </label>
+            <Textarea
+              id="remark"
+              value={remark}
+              onChange={(e) => setRemark(e.target.value)}
+              placeholder="กรุณากรอกหมายเหตุ (ถ้ามี)"
+              rows={3}
+              disabled={isLoading}
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsModalOpen(false);
+                clearForm();
+              }}
+              disabled={isLoading}
+            >
+              ยกเลิก
+            </Button>
+            <Button onClick={handleSave} disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  กำลังบันทึก...
+                </>
+              ) : (
+                "บันทึก"
+              )}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>รายการขนาดอาหาร</CardTitle>
+          <CardDescription>
+            รายการขนาดอาหารทั้งหมด {foodSizes.length} รายการ
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {foodSizes.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <p>ยังไม่มีข้อมูลขนาดอาหาร</p>
+              <p className="text-sm mt-2">
+                คลิกปุ่ม "เพิ่มขนาดอาหาร" เพื่อเพิ่มข้อมูล
+              </p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[80px]">ลำดับ</TableHead>
+                  <TableHead>ประเภทอาหาร</TableHead>
+                  <TableHead>ชื่อขนาดอาหาร</TableHead>
+                  <TableHead className="text-right">ราคาเพิ่มเติม</TableHead>
+                  <TableHead>หมายเหตุ</TableHead>
+                  <TableHead className="w-[150px] text-right">จัดการ</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {foodSizes.map((foodSize, index) => (
+                  <TableRow key={foodSize.id}>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell className="font-medium">
+                      {getFoodTypeName(foodSize.foodTypeId)}
+                    </TableCell>
+                    <TableCell className="font-medium">{foodSize.name}</TableCell>
+                    <TableCell className="text-right">
+                      {foodSize.moneyAdded
+                        ? `${foodSize.moneyAdded.toLocaleString()} บาท`
+                        : "-"}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {foodSize.remark || "-"}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => editFoodSize(foodSize)}
+                          className="h-8 w-8"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              onClick={() => setDeleteId(foodSize.id)}
+                              className="h-8 w-8"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>ยืนยันการลบ</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                คุณต้องการลบขนาดอาหาร "{foodSize.name}" หรือไม่?
+                                <br />
+                                การกระทำนี้ไม่สามารถยกเลิกได้
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel onClick={() => setDeleteId(null)}>
+                                ยกเลิก
+                              </AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={handleDelete}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                ลบ
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default FoodSizePage;

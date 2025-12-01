@@ -8,17 +8,12 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/s
 import Sidebar from "./sidebar";
 
 export default function Navbar() {
-  const [user, setUser] = useState<{ name?: string; id?: number } | null>(null);
+  const [name, setName] = useState("");
 
   useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      try {
-        setUser(JSON.parse(userData));
-      } catch (error) {
-        console.error("Error parsing user data:", error);
-      }
-    }
+    const name = localStorage.getItem("next_name");
+    console.log(name);
+    setName(name ?? "");
   }, []);
 
   return (
@@ -73,7 +68,7 @@ export default function Navbar() {
             </div>
             <div className="hidden md:block">
               <p className="text-sm font-medium text-foreground">
-                {user?.name || "ผู้ใช้"}
+                {name}
               </p>
               <p className="text-xs text-muted-foreground">Back Office</p>
             </div>
