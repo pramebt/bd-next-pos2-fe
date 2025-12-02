@@ -33,6 +33,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 import Modal from "@/components/shared/Mymodal";
 
 interface FoodTypeProps {
@@ -236,77 +237,159 @@ const FoodTypePage = () => {
               </p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[80px]">ลำดับ</TableHead>
-                  <TableHead>ชื่อประเภทอาหาร</TableHead>
-                  <TableHead>หมายเหตุ</TableHead>
-                  <TableHead className="w-[150px] text-right">จัดการ</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Mobile Card View */}
+              <div className="block md:hidden space-y-4">
                 {foodTypes.map((foodType, index) => (
-                  <TableRow key={foodType.id}>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell className="font-medium">
-                      {foodType.name}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {foodType.remark || "-"}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => editFoodType(foodType)}
-                          className="h-8 w-8"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="destructive"
-                              size="icon"
-                              onClick={() => setDeleteId(foodType.id)}
-                              className="h-8 w-8"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>ยืนยันการลบ</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                คุณต้องการลบประเภทอาหาร "{foodType.name}"
-                                หรือไม่?
-                                <br />
-                                การกระทำนี้ไม่สามารถยกเลิกได้
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel
-                                onClick={() => setDeleteId(null)}
+                  <Card key={foodType.id} className="overflow-hidden">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Badge variant="outline" className="shrink-0">
+                              #{index + 1}
+                            </Badge>
+                            <h3 className="font-semibold text-base truncate">{foodType.name}</h3>
+                          </div>
+                          {foodType.remark && (
+                            <p className="text-sm text-muted-foreground line-clamp-2">
+                              {foodType.remark}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => editFoodType(foodType)}
+                            className="h-8 w-8"
+                            title="แก้ไข"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="destructive"
+                                size="icon"
+                                onClick={() => setDeleteId(foodType.id)}
+                                className="h-8 w-8"
+                                title="ลบ"
                               >
-                                ยกเลิก
-                              </AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={handleDelete}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                ลบ
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>ยืนยันการลบ</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  คุณต้องการลบประเภทอาหาร "{foodType.name}"
+                                  หรือไม่?
+                                  <br />
+                                  การกระทำนี้ไม่สามารถยกเลิกได้
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel
+                                  onClick={() => setDeleteId(null)}
+                                >
+                                  ยกเลิก
+                                </AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={handleDelete}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  ลบ
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       </div>
-                    </TableCell>
-                  </TableRow>
+                    </CardContent>
+                  </Card>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[80px]">ลำดับ</TableHead>
+                      <TableHead>ชื่อประเภทอาหาร</TableHead>
+                      <TableHead>หมายเหตุ</TableHead>
+                      <TableHead className="w-[150px] text-right">จัดการ</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {foodTypes.map((foodType, index) => (
+                      <TableRow key={foodType.id}>
+                        <TableCell>
+                          <Badge variant="outline">{index + 1}</Badge>
+                        </TableCell>
+                        <TableCell className="font-semibold text-base">
+                          {foodType.name}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground max-w-xs truncate">
+                          {foodType.remark || "-"}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => editFoodType(foodType)}
+                              className="h-9 w-9 hover:bg-primary hover:text-primary-foreground transition-colors"
+                              title="แก้ไข"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="destructive"
+                                  size="icon"
+                                  onClick={() => setDeleteId(foodType.id)}
+                                  className="h-9 w-9 hover:bg-destructive/90 transition-colors"
+                                  title="ลบ"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>ยืนยันการลบ</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    คุณต้องการลบประเภทอาหาร "{foodType.name}"
+                                    หรือไม่?
+                                    <br />
+                                    การกระทำนี้ไม่สามารถยกเลิกได้
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel
+                                    onClick={() => setDeleteId(null)}
+                                  >
+                                    ยกเลิก
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={handleDelete}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    ลบ
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
