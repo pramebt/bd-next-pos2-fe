@@ -86,7 +86,7 @@ const FoodTypePage = () => {
         await axios.post(`${apiUrl}/api/food-type/create`, payload);
         toast.success("เพิ่มประเภทอาหารสำเร็จ");
       } else {
-        await axios.post(`${apiUrl}/api/food-type/update`, payload);
+        await axios.put(`${apiUrl}/api/food-type/update/${id}`, payload);
         toast.success("แก้ไขประเภทอาหารสำเร็จ");
       }
 
@@ -110,7 +110,7 @@ const FoodTypePage = () => {
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      await axios.post(`${apiUrl}/api/food-type/delete`, { id: deleteId });
+      await axios.delete(`${apiUrl}/api/food-type/delete/${deleteId}`);
       toast.success("ลบประเภทอาหารสำเร็จ");
       fetchData();
       setDeleteId(null);

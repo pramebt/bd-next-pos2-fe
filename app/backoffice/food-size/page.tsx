@@ -145,7 +145,7 @@ const FoodSizePage = () => {
         await axios.post(`${apiUrl}/api/food-size/create`, payload);
         toast.success("เพิ่มขนาดอาหารสำเร็จ");
       } else {
-        await axios.post(`${apiUrl}/api/food-size/update`, payload);
+        await axios.put(`${apiUrl}/api/food-size/update/${id}`, payload);
         toast.success("แก้ไขขนาดอาหารสำเร็จ");
       }
       fetchData();
@@ -168,7 +168,7 @@ const FoodSizePage = () => {
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      await axios.post(`${apiUrl}/api/food-size/delete`, { id: deleteId });
+      await axios.delete(`${apiUrl}/api/food-size/delete/${deleteId}`);
       toast.success("ลบขนาดอาหารสำเร็จ");
       fetchData();
       setDeleteId(null);

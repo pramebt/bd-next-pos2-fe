@@ -188,7 +188,7 @@ const FoodPage = () => {
         await axios.post(`${apiUrl}/api/food/create`, payload);
         toast.success("บันทึกข้อมูลอาหารสำเร็จ");
       } else {
-        await axios.post(`${apiUrl}/api/food/update`, payload);
+        await axios.put(`${apiUrl}/api/food/update/${id}`, payload);
         toast.success("แก้ไขข้อมูลอาหารสำเร็จ");
       }
       fetchDataFood();
@@ -206,7 +206,7 @@ const FoodPage = () => {
     if (!deleteId) return;
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      await axios.post(`${apiUrl}/api/food/delete`, { id: deleteId });
+      await axios.delete(`${apiUrl}/api/food/delete/${deleteId}`);
       toast.success("ลบข้อมูลอาหารสำเร็จ");
       fetchDataFood();
       setDeleteId(null);

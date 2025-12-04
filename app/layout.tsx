@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Kanit } from "next/font/google";
+
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -8,6 +9,7 @@ const kanit = Kanit({
   weight: ["300", "400", "500", "600", "700"],
   variable: "--font-kanit",
 });
+
 
 export const metadata: Metadata = {
   title: "POS System",

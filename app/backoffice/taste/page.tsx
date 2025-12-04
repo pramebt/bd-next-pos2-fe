@@ -121,7 +121,7 @@ const TastePage = () => {
         if (!deleteId) return;
         try {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-            await axios.post(`${apiUrl}/api/taste/delete`, { id: deleteId });
+            await axios.delete(`${apiUrl}/api/taste/delete`, { data: { id: deleteId } });
         
         toast.success("ลบข้อมูลรสชาติสำเร็จ");
         fetchDataTaste();
