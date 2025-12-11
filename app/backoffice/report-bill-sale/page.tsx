@@ -95,7 +95,7 @@ const ReportBillSalePage = () => {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [selectedBill, setSelectedBill] = useState<BillSale | null>(null);
   const [sumAmount, setSumAmount] = useState(0);
-  const isInitialMount = useRef(true);
+  const isFirstLoad = useRef(true);
 
   // Set default dates to current month
   const today = new Date();
@@ -106,9 +106,9 @@ const ReportBillSalePage = () => {
   const [endDate, setEndDate] = useState(dayjs(lastDay).format('YYYY-MM-DD'));
 
   useEffect(() => {
-    // Fetch data automatically only on initial mount
-    if (isInitialMount.current && startDate && endDate) {
-      isInitialMount.current = false;
+    // Fetch data automatically only on first load
+    if (isFirstLoad.current && startDate && endDate) {
+      isFirstLoad.current = false;
       fetchData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
