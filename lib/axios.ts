@@ -42,6 +42,7 @@ axiosInstance.interceptors.response.use(
         localStorage.removeItem(tokenKey);
         localStorage.removeItem('next_name');
         localStorage.removeItem('next_user_id');
+        localStorage.removeItem('next_user_level');
         // Only redirect if not already on signin page
         if (window.location.pathname !== '/signin') {
           window.location.href = '/signin';
