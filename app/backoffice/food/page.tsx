@@ -1,6 +1,6 @@
 // Food Management Page
 "use client";
-import axios from 'axios';
+import axiosInstance from '@/lib/axios';
 import React, { useEffect, useState } from 'react'
 import { toast } from 'sonner';
 import { Plus, Edit, Trash2, Loader2 } from "lucide-react";
@@ -94,7 +94,7 @@ const FoodPage = () => {
   const fetchDataFoodType = async () => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const response = await axios.get(`${apiUrl}/api/food-type/list`);
+      const response = await axiosInstance.get(`${apiUrl}/api/food-type/list`);
       
       if (response.data.result.length > 0) {
         setFoodTypes(response.data.result);
@@ -108,7 +108,7 @@ const FoodPage = () => {
   const fetchDataFood = async () => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const response = await axios.get(`${apiUrl}/api/food/list`);
+      const response = await axiosInstance.get(`${apiUrl}/api/food/list`);
       setFoods(response.data.result || []);
     } catch (error: any) {
       toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูลอาหาร");
@@ -125,7 +125,7 @@ const FoodPage = () => {
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const response = await axios.post(`${apiUrl}/api/food/upload-image`, formData);
+      const response = await axiosInstance.post(`${apiUrl}/api/food/upload-image`, formData);
       
       return response.data.fileName;
 
@@ -185,10 +185,10 @@ const FoodPage = () => {
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
       if (id === 0) {
-        await axios.post(`${apiUrl}/api/food/create`, payload);
+        await axiosInstance.post(`${apiUrl}/api/food/create`, payload);
         toast.success("บันทึกข้อมูลอาหารสำเร็จ");
       } else {
-        await axios.put(`${apiUrl}/api/food/update/${id}`, payload);
+        await axiosInstance.put(`${apiUrl}/api/food/update/${id}`, payload);
         toast.success("แก้ไขข้อมูลอาหารสำเร็จ");
       }
       fetchDataFood();
@@ -206,7 +206,7 @@ const FoodPage = () => {
     if (!deleteId) return;
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      await axios.delete(`${apiUrl}/api/food/delete/${deleteId}`);
+      await axiosInstance.delete(`${apiUrl}/api/food/delete/${deleteId}`);
       toast.success("ลบข้อมูลอาหารสำเร็จ");
       fetchDataFood();
       setDeleteId(null);

@@ -1,7 +1,7 @@
 // Organization Page
 "use client";
 
-import axios from "axios";
+import axiosInstance from '@/lib/axios';
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Save, Loader2, Building2 } from "lucide-react";
@@ -43,7 +43,7 @@ const OrganizationPage = () => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
     try {
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         `${apiUrl}/api/organization/upload-file`,
         formData
       );
@@ -64,7 +64,7 @@ const OrganizationPage = () => {
   const fetchData = async () => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const response = await axios.get(`${apiUrl}/api/organization/info`);
+      const response = await axiosInstance.get(`${apiUrl}/api/organization/info`);
 
       if (response.data.result) {
         setName(response.data.result.name || "");
@@ -122,7 +122,7 @@ const OrganizationPage = () => {
       };
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      await axios.post(`${apiUrl}/api/organization/create`, payload);
+      await axiosInstance.post(`${apiUrl}/api/organization/create`, payload);
       toast.success("บันทึกข้อมูลสำเร็จ");
       fetchData();
       setFileSelected(null);

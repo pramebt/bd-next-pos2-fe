@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from 'react';
-import axios from 'axios';
+import axiosInstance from '@/lib/axios';
 import { toast } from 'sonner';
 import dayjs from 'dayjs';
 import { 
@@ -128,7 +128,7 @@ const ReportBillSalePage = () => {
         endDate: endDate
       };
 
-      const res = await axios.post(`${apiUrl}/api/bill-sale/list`, payload);
+      const res = await axiosInstance.post(`${apiUrl}/api/bill-sale/list`, payload);
       const results = res.data.results || [];
       setBillSales(results);
 
@@ -152,7 +152,7 @@ const ReportBillSalePage = () => {
     
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      await axios.delete(`${apiUrl}/api/bill-sale/delete`, {
+      await axiosInstance.delete(`${apiUrl}/api/bill-sale/delete`, {
         data: { id: deleteId }
       });
       

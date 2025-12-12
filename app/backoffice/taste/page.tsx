@@ -18,7 +18,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import axios from 'axios';
+import axiosInstance from '@/lib/axios';
 import { Edit, Loader2, Plus, Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react'
 import { toast } from 'sonner';
@@ -60,7 +60,7 @@ const TastePage = () => {
     const fetchDataTaste = async () => {
         try {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-            const response = await axios.get(`${apiUrl}/api/taste/list`);
+            const response = await axiosInstance.get(`${apiUrl}/api/taste/list`);
             setTastes(response.data.result || []);
         } catch (error: any) {
             toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูลรสชาติ", {
@@ -72,7 +72,7 @@ const TastePage = () => {
     const fetchDataFoodType = async () => {
         try {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-            const response = await axios.get(`${apiUrl}/api/food-type/list`);
+            const response = await axiosInstance.get(`${apiUrl}/api/food-type/list`);
             if (response.data.result.length > 0) {
                 setFoodTypes(response.data.result);
                 setFoodTypeId(response.data.result[0].id);
@@ -102,9 +102,9 @@ const TastePage = () => {
             }
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
             if (id === 0) {
-                await axios.post(`${apiUrl}/api/taste/create`, payload);
+                await axiosInstance.post(`${apiUrl}/api/taste/create`, payload);
             } else {
-                await axios.post(`${apiUrl}/api/taste/update`, payload);
+                await axiosInstance.post(`${apiUrl}/api/taste/update`, payload);
             }
             toast.success("บันทึกข้อมูลรสชาติสำเร็จ");
             fetchDataTaste();
@@ -121,7 +121,7 @@ const TastePage = () => {
         if (!deleteId) return;
         try {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-            await axios.delete(`${apiUrl}/api/taste/delete`, { data: { id: deleteId } });
+            await axiosInstance.delete(`${apiUrl}/api/taste/delete`, { data: { id: deleteId } });
         
         toast.success("ลบข้อมูลรสชาติสำเร็จ");
         fetchDataTaste();

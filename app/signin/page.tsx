@@ -35,6 +35,7 @@ export default function SignInPage() {
         localStorage.setItem(tokenKey, res.data.token);
         localStorage.setItem("next_name", res.data.name);
         localStorage.setItem("next_user_id", res.data.id);
+        localStorage.setItem("next_user_level", res.data.level || "user");
         router.push("/backoffice");
       }
       toast.success("ลงชื่อเข้าใช้สำเร็จ", {

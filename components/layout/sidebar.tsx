@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -87,14 +88,41 @@ const reportItems = [
 export default function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
+  const [userLevel, setUserLevel] = useState<string>("user");
+
+  useEffect(() => {
+    // Get user level from localStorage
+    const level = localStorage.getItem("next_user_level") || "user";
+    setUserLevel(level);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     localStorage.removeItem("next_name");
     localStorage.removeItem("next_user_id");
+    localStorage.removeItem("next_user_level");
     router.push("/signin");
     toast.success("ออกจากระบบสำเร็จ");
+  };
+
+  // Filter menu items based on user level
+  const getFilteredMenuItems = () => {
+    if (userLevel === "admin") {
+      return menuItems;
+    } else {
+      // User can only see POS
+      return menuItems.filter(item => item.href === "/backoffice/sale");
+    }
+  };
+
+  const getFilteredReportItems = () => {
+    if (userLevel === "admin") {
+      return reportItems;
+    } else {
+      // User cannot see reports
+      return [];
+    }
   };
 
   const isActive = (href: string) => {
@@ -128,7 +156,7 @@ export default function Sidebar() {
           <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
             เมนูหลัก
           </p>
-          {menuItems.map((item) => {
+          {getFilteredMenuItems().map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href);
             return (
@@ -149,30 +177,32 @@ export default function Sidebar() {
           })}
         </div>
 
-        <div className="space-y-1 mt-6">
-          <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-            รายงาน
-          </p>
-          {reportItems.map((item) => {
-            const Icon = item.icon;
-            const active = isActive(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
-                  active
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                )}
-              >
-                <Icon className="w-5 h-5" />
-                <span>{item.title}</span>
-              </Link>
-            );
-          })}
-        </div>
+        {getFilteredReportItems().length > 0 && (
+          <div className="space-y-1 mt-6">
+            <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              รายงาน
+            </p>
+            {getFilteredReportItems().map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                    active
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  )}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span>{item.title}</span>
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </nav>
 
       {/* Logout Button */}

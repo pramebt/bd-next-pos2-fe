@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from 'react';
-import axios from 'axios';
+import axiosInstance from '@/lib/axios';
 import { toast } from 'sonner';
 import { Plus, Edit, Trash2, Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -98,7 +98,7 @@ const FoodPaginatePage = () => {
     try {
       setIsLoading(true);
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const res = await axios.post(`${apiUrl}/api/food/paginate`, {
+      const res = await axiosInstance.post(`${apiUrl}/api/food/paginate`, {
         page: currentPage,
         limit: limit,
       });
@@ -120,7 +120,7 @@ const FoodPaginatePage = () => {
     
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      await axios.delete(`${apiUrl}/api/food/delete/${deleteId}`);
+      await axiosInstance.delete(`${apiUrl}/api/food/delete/${deleteId}`);
       
       toast.success("ลบข้อมูลอาหารสำเร็จ");
       setDeleteId(null);

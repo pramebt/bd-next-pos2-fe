@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import axios from "axios";
+import axiosInstance from '@/lib/axios';
 import dayjs from "dayjs";
 import { toast } from "sonner";
 import {
@@ -85,7 +85,7 @@ const ReportSumSalePerMonthPage = () => {
     try {
       setIsLoading(true);
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const res = await axios.get(
+      const res = await axiosInstance.get(
         `${apiUrl}/api/report/report-sum-sale-per-month/${selectedYear}`
       );
       const results = res.data.results || [];
