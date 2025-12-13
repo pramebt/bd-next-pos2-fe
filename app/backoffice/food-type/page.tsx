@@ -1,9 +1,9 @@
 // Food Type Page
 "use client";
 import axiosInstance from '@/lib/axios';
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
-import { Plus, Edit, Trash2, Loader2 } from "lucide-react";
+import { Plus, Edit, Trash2, Loader2, Search, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -47,37 +47,98 @@ const FoodTypePage = () => {
   const [name, setName] = useState("");
   const [remark, setRemark] = useState("");
   const [foodTypes, setFoodTypes] = useState<FoodTypeProps[]>([]);
+  const [filteredFoodTypes, setFilteredFoodTypes] = useState<FoodTypeProps[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [foodCount, setFoodCount] = useState<number>(0);
+  const [deleteFoodTypeName, setDeleteFoodTypeName] = useState<string>("");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    // Filter food types based on search query
+    if (searchQuery.trim() === "") {
+      setFilteredFoodTypes(foodTypes);
+    } else {
+      const filtered = foodTypes.filter((foodType) =>
+        foodType.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (foodType.remark && foodType.remark.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+      setFilteredFoodTypes(filtered);
+    }
+  }, [searchQuery, foodTypes]);
+
+  useEffect(() => {
+    // Auto-focus on name input when modal opens
+    if (isModalOpen && nameInputRef.current) {
+      setTimeout(() => {
+        nameInputRef.current?.focus();
+      }, 100);
+    }
+  }, [isModalOpen]);
+
   const fetchData = async () => {
     try {
+      setIsFetching(true);
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
       const response = await axiosInstance.get(`${apiUrl}/api/food-type/list`);
-      setFoodTypes(response.data.result || []);
+      const data = response.data.result || [];
+      setFoodTypes(data);
+      setFilteredFoodTypes(data);
     } catch (error: any) {
       toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูล", {
         description: error.message || "ไม่สามารถโหลดข้อมูลประเภทอาหารได้",
       });
+    } finally {
+      setIsFetching(false);
+    }
+  };
+
+  const checkFoodCount = async (foodTypeId: number) => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const response = await axiosInstance.get(`${apiUrl}/api/food/list`);
+      const foods = response.data.result || [];
+      const count = foods.filter((food: any) => food.foodTypeId === foodTypeId).length;
+      return count;
+    } catch (error) {
+      return 0;
     }
   };
 
   const handleSave = async () => {
-    if (!name.trim()) {
+    const trimmedName = name.trim();
+    const trimmedRemark = remark.trim();
+
+    if (!trimmedName) {
       toast.warning("กรุณากรอกชื่อประเภทอาหาร");
+      nameInputRef.current?.focus();
+      return;
+    }
+
+    if (trimmedName.length > 100) {
+      toast.warning("ชื่อประเภทอาหารต้องไม่เกิน 100 ตัวอักษร");
+      nameInputRef.current?.focus();
+      return;
+    }
+
+    if (trimmedRemark.length > 500) {
+      toast.warning("หมายเหตุต้องไม่เกิน 500 ตัวอักษร");
       return;
     }
 
     setIsLoading(true);
     try {
       const payload = {
-        name: name.trim(),
-        remark: remark.trim(),
+        name: trimmedName,
+        remark: trimmedRemark,
         id: id,
       };
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -105,6 +166,17 @@ const FoodTypePage = () => {
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      handleSave();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      setIsModalOpen(false);
+      clearForm();
+    }
+  };
+
   const handleDelete = async () => {
     if (!deleteId) return;
 
@@ -113,7 +185,10 @@ const FoodTypePage = () => {
       await axiosInstance.delete(`${apiUrl}/api/food-type/delete/${deleteId}`);
       toast.success("ลบประเภทอาหารสำเร็จ");
       fetchData();
+      setIsDeleteDialogOpen(false);
       setDeleteId(null);
+      setFoodCount(0);
+      setDeleteFoodTypeName("");
     } catch (error: any) {
       toast.error("เกิดข้อผิดพลาด", {
         description:
@@ -122,6 +197,14 @@ const FoodTypePage = () => {
           "ไม่สามารถลบข้อมูลได้",
       });
     }
+  };
+
+  const handleDeleteClick = async (foodType: FoodTypeProps) => {
+    setDeleteId(foodType.id);
+    setDeleteFoodTypeName(foodType.name);
+    setIsDeleteDialogOpen(true);
+    const count = await checkFoodCount(foodType.id);
+    setFoodCount(count);
   };
 
   const editFoodType = (foodType: FoodTypeProps) => {
@@ -154,10 +237,22 @@ const FoodTypePage = () => {
             เพิ่ม แก้ไข หรือลบประเภทอาหาร
           </p>
         </div>
-        <Button onClick={openAddModal} className="gap-2">
-          <Plus className="h-4 w-4" />
-          เพิ่มประเภทอาหาร
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={fetchData}
+            disabled={isFetching}
+            className="gap-2"
+            title="รีเฟรชข้อมูล"
+          >
+            <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+            <span className="hidden sm:inline">รีเฟรช</span>
+          </Button>
+          <Button onClick={openAddModal} className="gap-2">
+            <Plus className="h-4 w-4" />
+            เพิ่มประเภทอาหาร
+          </Button>
+        </div>
       </div>
 
       {/* Modal for Add/Edit */}
@@ -169,30 +264,47 @@ const FoodTypePage = () => {
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
       >
-        <div className="space-y-4">
+        <div className="space-y-4" onKeyDown={handleKeyDown}>
           <div className="space-y-2">
             <label htmlFor="name" className="text-sm font-medium">
               ชื่อประเภทอาหาร <span className="text-destructive">*</span>
+              <span className="text-xs text-muted-foreground ml-2">
+                ({name.length}/100)
+              </span>
             </label>
             <Input
+              ref={nameInputRef}
               id="name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                if (e.target.value.length <= 100) {
+                  setName(e.target.value);
+                }
+              }}
               placeholder="กรุณากรอกชื่อประเภทอาหาร"
               disabled={isLoading}
+              maxLength={100}
             />
           </div>
           <div className="space-y-2">
             <label htmlFor="remark" className="text-sm font-medium">
               หมายเหตุ
+              <span className="text-xs text-muted-foreground ml-2">
+                ({remark.length}/500)
+              </span>
             </label>
             <Textarea
               id="remark"
               value={remark}
-              onChange={(e) => setRemark(e.target.value)}
+              onChange={(e) => {
+                if (e.target.value.length <= 500) {
+                  setRemark(e.target.value);
+                }
+              }}
               placeholder="กรุณากรอกหมายเหตุ (ถ้ามี)"
               rows={3}
               disabled={isLoading}
+              maxLength={500}
             />
           </div>
           <div className="flex justify-end gap-2 pt-4">
@@ -220,12 +332,32 @@ const FoodTypePage = () => {
         </div>
       </Modal>
 
+      {/* Search Bar */}
+      {foodTypes.length > 0 && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="ค้นหาประเภทอาหาร (ชื่อ หรือ หมายเหตุ)..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Table */}
       <Card>
         <CardHeader>
           <CardTitle>รายการประเภทอาหาร</CardTitle>
           <CardDescription>
-            รายการประเภทอาหารทั้งหมด {foodTypes.length} รายการ
+            {searchQuery.trim() === ""
+              ? `รายการประเภทอาหารทั้งหมด ${foodTypes.length} รายการ`
+              : `พบ ${filteredFoodTypes.length} รายการ จากทั้งหมด ${foodTypes.length} รายการ`}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -238,16 +370,33 @@ const FoodTypePage = () => {
             </div>
           ) : (
             <>
-              {/* Mobile Card View */}
-              <div className="block md:hidden space-y-4">
-                {foodTypes.map((foodType, index) => (
+              {filteredFoodTypes.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <p>ไม่พบข้อมูลที่ค้นหา</p>
+                  <p className="text-sm mt-2">
+                    ลองค้นหาด้วยคำอื่น หรือ{" "}
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="text-primary hover:underline"
+                    >
+                      ล้างการค้นหา
+                    </button>
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {/* Mobile Card View */}
+                  <div className="block md:hidden space-y-4">
+                    {filteredFoodTypes.map((foodType, index) => {
+                      const originalIndex = foodTypes.findIndex((ft) => ft.id === foodType.id);
+                      return (
                   <Card key={foodType.id} className="overflow-hidden">
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <Badge variant="outline" className="shrink-0">
-                              #{index + 1}
+                              #{originalIndex + 1}
                             </Badge>
                             <h3 className="font-semibold text-base truncate">{foodType.name}</h3>
                           </div>
@@ -267,67 +416,42 @@ const FoodTypePage = () => {
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="destructive"
-                                size="icon"
-                                onClick={() => setDeleteId(foodType.id)}
-                                className="h-8 w-8"
-                                title="ลบ"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>ยืนยันการลบ</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  คุณต้องการลบประเภทอาหาร "{foodType.name}"
-                                  หรือไม่?
-                                  <br />
-                                  การกระทำนี้ไม่สามารถยกเลิกได้
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel
-                                  onClick={() => setDeleteId(null)}
-                                >
-                                  ยกเลิก
-                                </AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={handleDelete}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                >
-                                  ลบ
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            onClick={() => handleDeleteClick(foodType)}
+                            className="h-8 w-8"
+                            title="ลบ"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
-                ))}
-              </div>
+                      );
+                    })}
+                  </div>
 
-              {/* Desktop Table View */}
-              <div className="hidden md:block overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[80px]">ลำดับ</TableHead>
-                      <TableHead>ชื่อประเภทอาหาร</TableHead>
-                      <TableHead>หมายเหตุ</TableHead>
-                      <TableHead className="w-[150px] text-right">จัดการ</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {foodTypes.map((foodType, index) => (
-                      <TableRow key={foodType.id}>
-                        <TableCell>
-                          <Badge variant="outline">{index + 1}</Badge>
-                        </TableCell>
+                  {/* Desktop Table View */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[80px]">ลำดับ</TableHead>
+                          <TableHead>ชื่อประเภทอาหาร</TableHead>
+                          <TableHead>หมายเหตุ</TableHead>
+                          <TableHead className="w-[150px] text-right">จัดการ</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredFoodTypes.map((foodType) => {
+                          const originalIndex = foodTypes.findIndex((ft) => ft.id === foodType.id);
+                          return (
+                            <TableRow key={foodType.id}>
+                              <TableCell>
+                                <Badge variant="outline">{originalIndex + 1}</Badge>
+                              </TableCell>
                         <TableCell className="font-semibold text-base">
                           {foodType.name}
                         </TableCell>
@@ -345,54 +469,70 @@ const FoodTypePage = () => {
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="destructive"
-                                  size="icon"
-                                  onClick={() => setDeleteId(foodType.id)}
-                                  className="h-9 w-9 hover:bg-destructive/90 transition-colors"
-                                  title="ลบ"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>ยืนยันการลบ</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    คุณต้องการลบประเภทอาหาร "{foodType.name}"
-                                    หรือไม่?
-                                    <br />
-                                    การกระทำนี้ไม่สามารถยกเลิกได้
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel
-                                    onClick={() => setDeleteId(null)}
-                                  >
-                                    ยกเลิก
-                                  </AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={handleDelete}
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                  >
-                                    ลบ
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              onClick={() => handleDeleteClick(foodType)}
+                              className="h-9 w-9 hover:bg-destructive/90 transition-colors"
+                              title="ลบ"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </>
+              )}
             </>
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>ยืนยันการลบ</AlertDialogTitle>
+            <AlertDialogDescription>
+              คุณต้องการลบประเภทอาหาร "{deleteFoodTypeName}"
+              หรือไม่?
+              <br />
+              {foodCount > 0 && (
+                <>
+                  <span className="text-destructive font-semibold">
+                    ⚠️ มีอาหารที่ใช้ประเภทนี้อยู่ {foodCount} รายการ
+                  </span>
+                  <br />
+                </>
+              )}
+              การกระทำนี้ไม่สามารถยกเลิกได้
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                setIsDeleteDialogOpen(false);
+                setDeleteId(null);
+                setFoodCount(0);
+                setDeleteFoodTypeName("");
+              }}
+            >
+              ยกเลิก
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              ลบ
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
