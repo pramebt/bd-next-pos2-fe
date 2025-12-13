@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import axiosInstance from "@/lib/axios";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,41 +14,7 @@ export default function SignInPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isCheckingToken, setIsCheckingToken] = useState(true);
   const router = useRouter();
-
-  // Check if user is already logged in
-  useEffect(() => {
-    const checkToken = async () => {
-      try {
-        const tokenKey = process.env.NEXT_PUBLIC_TOKEN_KEY || "token";
-        const token = localStorage.getItem(tokenKey);
-        
-        // If no token, skip check
-        if (!token) {
-          setIsCheckingToken(false);
-          return;
-        }
-
-        // Verify token by calling a protected endpoint
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-        await axiosInstance.get(`${apiUrl}/api/user/get-users`);
-        
-        // Token is valid, redirect to dashboard
-        router.push("/backoffice");
-      } catch (error: any) {
-        // Token is invalid or expired, clear it and show signin page
-        const tokenKey = process.env.NEXT_PUBLIC_TOKEN_KEY || "token";
-        localStorage.removeItem(tokenKey);
-        localStorage.removeItem('next_name');
-        localStorage.removeItem('next_user_id');
-        localStorage.removeItem('next_user_level');
-        setIsCheckingToken(false);
-      }
-    };
-
-    checkToken();
-  }, [router]);
 
   const signin = async () => {
     try {
@@ -104,20 +69,6 @@ export default function SignInPage() {
     setIsLoading(true);
     signin().finally(() => setIsLoading(false));
   };
-
-  // Show loading while checking token
-  if (isCheckingToken) {
-    return (
-      <div className="w-full max-w-md mx-auto px-4">
-        <div className="backdrop-blur-2xl bg-card/90 border border-border rounded-3xl shadow-2xl shadow-black/10 dark:shadow-black/50 p-10 space-y-8">
-          <div className="flex flex-col items-center justify-center space-y-4 py-8">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">กำลังตรวจสอบการเข้าสู่ระบบ...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="w-full max-w-md mx-auto px-4">

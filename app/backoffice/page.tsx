@@ -1,25 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LayoutDashboard, ShoppingBag, Utensils, Users } from "lucide-react";
 
 export default function BackOfficePage() {
   const router = useRouter();
-  const [userLevel, setUserLevel] = useState<string>("user");
 
   useEffect(() => {
     // Check if user is logged in
-    const tokenKey = process.env.NEXT_PUBLIC_TOKEN_KEY || "token";
-    const token = localStorage.getItem(tokenKey);
+    const token = localStorage.getItem("token");
     if (!token) {
       router.push("/signin");
     }
-    
-    // Get user level from localStorage
-    const level = localStorage.getItem("next_user_level") || "user";
-    setUserLevel(level);
   }, [router]);
 
   const quickActions = [
@@ -53,16 +47,6 @@ export default function BackOfficePage() {
     },
   ];
 
-  // Filter quick actions based on user level
-  const getFilteredQuickActions = () => {
-    if (userLevel === "admin") {
-      return quickActions;
-    } else {
-      // User can only see POS
-      return quickActions.filter(action => action.href === "/backoffice/sale");
-    }
-  };
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -75,7 +59,7 @@ export default function BackOfficePage() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {getFilteredQuickActions().map((action) => {
+        {quickActions.map((action) => {
           const Icon = action.icon;
           return (
             <Card
