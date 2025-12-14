@@ -40,11 +40,9 @@ const OrganizationPage = () => {
     const formData = new FormData();
     formData.append("myFile", fileSelected);
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-
     try {
       const response = await axiosInstance.post(
-        `${apiUrl}/api/organization/upload-file`,
+        '/api/organization/upload-file',
         formData
       );
       setLogo(response.data.fileName);
@@ -63,8 +61,7 @@ const OrganizationPage = () => {
 
   const fetchData = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const response = await axiosInstance.get(`${apiUrl}/api/organization/info`);
+      const response = await axiosInstance.get('/api/organization/info');
 
       if (response.data.result) {
         setName(response.data.result.name || "");
@@ -121,8 +118,7 @@ const OrganizationPage = () => {
         taxCode: taxCode.trim(),
       };
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      await axiosInstance.post(`${apiUrl}/api/organization/create`, payload);
+      await axiosInstance.post('/api/organization/create', payload);
       toast.success("บันทึกข้อมูลสำเร็จ");
       fetchData();
       setFileSelected(null);
@@ -134,8 +130,6 @@ const OrganizationPage = () => {
       setIsLoading(false);
     }
   };
-
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   return (
     <div className="space-y-6">
@@ -171,7 +165,7 @@ const OrganizationPage = () => {
                 <div className="space-y-2 mb-3">
                   <div className="flex justify-center">
                     <img
-                      src={`${apiUrl}/uploads/${logo}`}
+                      src={getImageUrl(`uploads/${logo}`)}
                       alt="Logo"
                       className="rounded-lg border-2 border-gray-200 object-contain bg-gray-50 p-2 max-h-32"
                     />

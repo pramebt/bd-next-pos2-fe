@@ -122,13 +122,12 @@ const ReportBillSalePage = () => {
 
     try {
       setIsLoading(true);
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
       const payload = {
         startDate: startDate,
         endDate: endDate
       };
 
-      const res = await axiosInstance.post(`${apiUrl}/api/bill-sale/list`, payload);
+      const res = await axiosInstance.post('/api/bill-sale/list', payload);
       const results = res.data.results || [];
       setBillSales(results);
 
@@ -151,8 +150,7 @@ const ReportBillSalePage = () => {
     if (!deleteId) return;
     
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      await axiosInstance.delete(`${apiUrl}/api/bill-sale/delete`, {
+      await axiosInstance.delete('/api/bill-sale/delete', {
         data: { id: deleteId }
       });
       
@@ -169,8 +167,6 @@ const ReportBillSalePage = () => {
   const formatDate = (dateString: string) => {
     return dayjs(dateString).format('DD/MM/YYYY HH:mm');
   };
-
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   return (
     <div className="space-y-6">

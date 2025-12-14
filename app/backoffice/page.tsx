@@ -1,28 +1,35 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LayoutDashboard, ShoppingBag, Utensils, Users } from "lucide-react";
 
 export default function BackOfficePage() {
   const router = useRouter();
+  const [userLevel, setUserLevel] = useState<string>("user");
 
   useEffect(() => {
     // Check if user is logged in
     const token = localStorage.getItem("token");
     if (!token) {
       router.push("/signin");
+      return;
     }
+
+    // Get user level from localStorage
+    const level = localStorage.getItem("next_user_level") || "user";
+    setUserLevel(level);
   }, [router]);
 
-  const quickActions = [
+  const allQuickActions = [
     {
       title: "Dashboard",
       description: "ดูภาพรวมระบบ",
       icon: LayoutDashboard,
       href: "/backoffice/dashboard",
       color: "bg-blue-500",
+      adminOnly: true,
     },
     {
       title: "ขาย POS",
@@ -30,6 +37,7 @@ export default function BackOfficePage() {
       icon: ShoppingBag,
       href: "/backoffice/sale",
       color: "bg-green-500",
+      adminOnly: false,
     },
     {
       title: "จัดการอาหาร",
@@ -37,6 +45,7 @@ export default function BackOfficePage() {
       icon: Utensils,
       href: "/backoffice/food",
       color: "bg-orange-500",
+      adminOnly: true,
     },
     {
       title: "จัดการผู้ใช้",
@@ -44,8 +53,14 @@ export default function BackOfficePage() {
       icon: Users,
       href: "/backoffice/user",
       color: "bg-purple-500",
+      adminOnly: true,
     },
   ];
+
+  // Filter quick actions based on user level
+  const quickActions = userLevel === "admin" 
+    ? allQuickActions 
+    : allQuickActions.filter(action => !action.adminOnly);
 
   return (
     <div className="space-y-6">

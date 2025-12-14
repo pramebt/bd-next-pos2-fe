@@ -57,7 +57,6 @@ const FoodTypePage = () => {
   const [deleteFoodTypeName, setDeleteFoodTypeName] = useState<string>("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
   useEffect(() => {
     fetchData();
   }, []);
@@ -88,7 +87,7 @@ const FoodTypePage = () => {
     try {
       setIsFetching(true);
       
-      const response = await axiosInstance.get(`${apiUrl}/api/food-type/list`);
+      const response = await axiosInstance.get('/api/food-type/list');
       const data = response.data.result || [];
       setFoodTypes(data);
       setFilteredFoodTypes(data);
@@ -104,7 +103,7 @@ const FoodTypePage = () => {
   const checkFoodCount = async (foodTypeId: number) => {
     try {
       
-      const response = await axiosInstance.get(`${apiUrl}/api/food/list`);
+      const response = await axiosInstance.get('/api/food/list');
       const foods = response.data.result || [];
       const count = foods.filter((food: any) => food.foodTypeId === foodTypeId).length;
       return count;
@@ -143,10 +142,10 @@ const FoodTypePage = () => {
       };
 
       if (id === 0) {
-        await axiosInstance.post(`${apiUrl}/api/food-type/create`, payload);
+        await axiosInstance.post('/api/food-type/create', payload);
         toast.success("เพิ่มประเภทอาหารสำเร็จ");
       } else {
-        await axiosInstance.put(`${apiUrl}/api/food-type/update/${id}`, payload);
+        await axiosInstance.put(`/api/food-type/update/${id}`, payload);
         toast.success("แก้ไขประเภทอาหารสำเร็จ");
       }
 
@@ -180,7 +179,7 @@ const FoodTypePage = () => {
     if (!deleteId) return;
 
     try {
-      await axiosInstance.delete(`${apiUrl}/api/food-type/delete/${deleteId}`);
+      await axiosInstance.delete(`/api/food-type/delete/${deleteId}`);
       toast.success("ลบประเภทอาหารสำเร็จ");
       fetchData();
       setIsDeleteDialogOpen(false);

@@ -3,6 +3,7 @@
 
 import React, { useEffect, useState } from 'react';
 import axiosInstance from '@/lib/axios';
+import { getImageUrl } from '@/lib/config';
 import { toast } from 'sonner';
 import { 
   ShoppingCart, 
@@ -86,9 +87,8 @@ const SaleTempPage = () => {
 
   const fetchDataSaleTempInfo = async (saleTempId: number) => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
       const res = await axiosInstance.get(
-        `${apiUrl}/api/sale-temp/info/${saleTempId}`
+        `/api/sale-temp/info/${saleTempId}`
       );
       setSaleTempDetails(res.data.results.SaleTempDetails);
       setTastes(res.data.results.Food?.FoodType?.Tastes || []);
@@ -116,10 +116,8 @@ const SaleTempPage = () => {
       const payload = {
         saleTempId: saleTempId,
       };
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-
       await axiosInstance.post(
-        `${apiUrl}/api/sale-temp/create-sale-temp-detail`,
+        '/api/sale-temp/create-sale-temp-detail',
         payload
       );
       await fetchDataSaleTemp();
@@ -140,8 +138,7 @@ const SaleTempPage = () => {
 
   const getFoods = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const res = await axiosInstance.get(`${apiUrl}/api/food/list`);
+      const res = await axiosInstance.get('/api/food/list');
       setFoods(res.data.result || []);
     } catch (error: any) {
       toast.error("เกิดข้อผิดพลาด", {
@@ -152,12 +149,11 @@ const SaleTempPage = () => {
 
   const filterFoods = async (foodType: string) => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
       if (foodType === "all") {
         await getFoods();
       } else {
       const res = await axiosInstance.get(
-          `${apiUrl}/api/food/filter/${foodType}`
+          `/api/food/filter/${foodType}`
       );
         setFoods(res.data.result || []);
       }
@@ -175,9 +171,7 @@ const SaleTempPage = () => {
         userId: Number(localStorage.getItem("next_user_id")),
         foodId: foodId,
       };
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-
-      await axiosInstance.post(`${apiUrl}/api/sale-temp/create`, payload);
+      await axiosInstance.post('/api/sale-temp/create', payload);
       fetchDataSaleTemp();
       toast.success("เพิ่มรายการสำเร็จ");
     } catch (error: any) {
@@ -189,8 +183,7 @@ const SaleTempPage = () => {
 
   const fetchDataSaleTemp = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const res = await axiosInstance.get(`${apiUrl}/api/sale-temp/list`);
+      const res = await axiosInstance.get('/api/sale-temp/list');
       const results = res.data.result || [];
       setSaleTemps(results);
       sumAmount(results);
@@ -213,8 +206,7 @@ const SaleTempPage = () => {
     if (!deleteSaleTempId) return;
     
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      await axiosInstance.post(`${apiUrl}/api/sale-temp/remove/${deleteSaleTempId}`);
+      await axiosInstance.post(`/api/sale-temp/remove/${deleteSaleTempId}`);
         fetchDataSaleTemp();
       toast.success("ลบรายการสำเร็จ");
       setDeleteSaleTempId(null);
@@ -231,8 +223,7 @@ const SaleTempPage = () => {
           tableNo: table,
           userId: Number(localStorage.getItem("next_user_id")),
         };
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      await axiosInstance.delete(`${apiUrl}/api/sale-temp/remove-all`, {
+      await axiosInstance.delete('/api/sale-temp/remove-all', {
           data: payload,
         });
         fetchDataSaleTemp();
@@ -251,9 +242,7 @@ const SaleTempPage = () => {
         qty: qty,
         id: id,
       };
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-
-      await axiosInstance.delete(`${apiUrl}/api/sale-temp/update-qty`, { data: payload });
+      await axiosInstance.delete('/api/sale-temp/update-qty', { data: payload });
       fetchDataSaleTemp();
     } catch (error: any) {
       toast.error("เกิดข้อผิดพลาด", {
@@ -273,9 +262,7 @@ const SaleTempPage = () => {
         tasteId: tasteId,
         saleTempDetailId: saleTempDetailId,
       };
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-
-      await axiosInstance.put(`${apiUrl}/api/sale-temp/select-taste`, payload);
+      await axiosInstance.put('/api/sale-temp/select-taste', payload);
       await fetchDataSaleTempInfo(saleTempId);
     } catch (error: any) {
       toast.error("เกิดข้อผิดพลาด", {
@@ -295,10 +282,8 @@ const SaleTempPage = () => {
       const payload = {
         saleTempDetailId: saleTempDetailId,
       };
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-
       await axiosInstance.put(
-        `${apiUrl}/api/sale-temp/unselect-taste`,
+        '/api/sale-temp/unselect-taste',
         payload
       );
       await fetchDataSaleTempInfo(saleTempId);
@@ -321,9 +306,7 @@ const SaleTempPage = () => {
         sizeId: sizeId,
         saleTempDetailId: saleTempDetailId,
       };
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-
-      await axiosInstance.put(`${apiUrl}/api/sale-temp/select-size`, payload);
+      await axiosInstance.put('/api/sale-temp/select-size', payload);
       await fetchDataSaleTempInfo(saleTempId);
       await fetchDataSaleTemp();
     } catch (error: any) {
@@ -338,9 +321,7 @@ const SaleTempPage = () => {
       const payload = {
         saleTempDetailId: saleTempDetailId,
       };
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-
-      await axiosInstance.put(`${apiUrl}/api/sale-temp/unselect-size`, payload);
+      await axiosInstance.put('/api/sale-temp/unselect-size', payload);
       await fetchDataSaleTempInfo(saleTempId);
       await fetchDataSaleTemp();
     } catch (error: any) {
@@ -355,9 +336,8 @@ const SaleTempPage = () => {
       const payload = {
         saleTempId: saleTempId,
       };
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
       await axiosInstance.post(
-        `${apiUrl}/api/sale-temp/create-sale-temp-detail`,
+        '/api/sale-temp/create-sale-temp-detail',
         payload
       );
       await fetchDataSaleTemp();
@@ -375,10 +355,8 @@ const SaleTempPage = () => {
       const payload = {
         saleTempDetailId: saleTempDetailId,
       };
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-
       await axiosInstance.delete(
-        `${apiUrl}/api/sale-temp/remove-sale-temp-detail`,
+        '/api/sale-temp/remove-sale-temp-detail',
         { data: payload }
       );
       await fetchDataSaleTemp();
@@ -397,10 +375,8 @@ const SaleTempPage = () => {
         tableNo: table,
         userId: Number(localStorage.getItem("next_user_id")),
       };
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-
       const res = await axiosInstance.post(
-        `${apiUrl}/api/sale-temp/print-bill-before-pay`,
+        '/api/sale-temp/print-bill-before-pay',
         payload
       );
       setTimeout(() => {
@@ -424,8 +400,7 @@ const SaleTempPage = () => {
           amount: amount + amountAdded,
           returnMoney: inputMoney - (amount + amountAdded),
         };
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      await axiosInstance.put(`${apiUrl}/api/sale-temp/end-sale`, payload);
+      await axiosInstance.put('/api/sale-temp/end-sale', payload);
         
         fetchDataSaleTemp();
       toast.success("จบการขายสำเร็จ");
@@ -445,9 +420,7 @@ const SaleTempPage = () => {
         tableNo: table,
         userId: Number(localStorage.getItem("next_user_id")),
       };
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-
-      const res = await axiosInstance.post(`${apiUrl}/api/sale-temp/print-bill-after-pay`, payload);
+      const res = await axiosInstance.post('/api/sale-temp/print-bill-after-pay', payload);
 
       setTimeout(() => {
         setBillUrl(res.data.fileName);
@@ -459,7 +432,6 @@ const SaleTempPage = () => {
       });
     }
   };
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
   const totalAmount = amount + amountAdded;
   const [showPrintDialog, setShowPrintDialog] = useState(false);
 
@@ -574,7 +546,7 @@ const SaleTempPage = () => {
                       {food.img && (
                         <div className="w-full overflow-hidden bg-muted aspect-square">
                           <img
-                            src={`${apiUrl}/uploads/${food.img}`}
+                            src={getImageUrl(`uploads/${food.img}`)}
                             alt={food.name}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                           />
@@ -1082,7 +1054,7 @@ const SaleTempPage = () => {
            {billUrl && (
              <div className="w-full h-[400px] sm:h-[500px] lg:h-[600px] border-2 rounded-lg overflow-hidden bg-muted/30">
                <iframe
-                 src={`${apiUrl}/${billUrl.startsWith('uploads/') ? billUrl : `uploads/${billUrl}`}`}
+                 src={getImageUrl(billUrl.startsWith('uploads/') ? billUrl : `uploads/${billUrl}`)}
                  className="w-full h-full"
                  title="Print Document"
                />

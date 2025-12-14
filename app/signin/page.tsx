@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { API_URL, TOKEN_KEY } from "@/lib/config";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -23,16 +24,13 @@ export default function SignInPage() {
         password,
       };
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const tokenKey = process.env.NEXT_PUBLIC_TOKEN_KEY || "token";
-
       const res = await axios.post(
-        `${apiUrl}/api/user/signIn`,
+        `${API_URL}/api/user/signIn`,
         payload
       );
 
       if (res.data.token !== undefined) {
-        localStorage.setItem(tokenKey, res.data.token);
+        localStorage.setItem(TOKEN_KEY, res.data.token);
         localStorage.setItem("next_name", res.data.name);
         localStorage.setItem("next_user_id", res.data.id);
         localStorage.setItem("next_user_level", res.data.level || "user");

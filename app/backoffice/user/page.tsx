@@ -68,8 +68,7 @@ const UserPage = () => {
 
   const fetchDataUsers = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const response = await axiosInstance.get(`${apiUrl}/api/user/get-users`);
+      const response = await axiosInstance.get('/api/user/get-users');
       setUsers(response.data.results || []);
     } catch (error: any) {
       toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูลผู้ใช้");
@@ -121,12 +120,11 @@ const UserPage = () => {
         payload.password = password.trim();
       }
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
       if (id === 0) {
-        await axiosInstance.post(`${apiUrl}/api/user/signup`, payload);
+        await axiosInstance.post('/api/user/signup', payload);
         toast.success("บันทึกข้อมูลผู้ใช้สำเร็จ");
       } else {
-        await axiosInstance.put(`${apiUrl}/api/user/update-user/${id}`, payload);
+        await axiosInstance.put(`/api/user/update-user/${id}`, payload);
         toast.success("แก้ไขข้อมูลผู้ใช้สำเร็จ");
       }
       fetchDataUsers();
@@ -143,8 +141,7 @@ const UserPage = () => {
   const handleDelete = async () => {
     if (!deleteId) return;
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      await axiosInstance.delete(`${apiUrl}/api/user/delete-user/${deleteId}`);
+      await axiosInstance.delete(`/api/user/delete-user/${deleteId}`);
       toast.success("ลบข้อมูลผู้ใช้สำเร็จ");
       fetchDataUsers();
       setDeleteId(null);

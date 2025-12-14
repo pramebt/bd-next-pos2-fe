@@ -87,9 +87,8 @@ const ReportSumSalePerDayPage = () => {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
       const res = await axiosInstance.get(
-        `${apiUrl}/api/report/report-sum-sale-per-day/${selectedYear}/${selectedMonth}`
+        `/api/report/report-sum-sale-per-day/${selectedYear}/${selectedMonth}`
       );
       const results = res.data.results || [];
       setData(results);

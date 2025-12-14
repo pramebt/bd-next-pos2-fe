@@ -116,9 +116,8 @@ const DashboardPage = () => {
   const fetchDayData = async () => {
     try {
       setIsLoadingDay(true);
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
       const res = await axiosInstance.get(
-        `${apiUrl}/api/report/report-sum-sale-per-day/${selectedYearForDay}/${selectedMonthForDay}`
+        `/api/report/report-sum-sale-per-day/${selectedYearForDay}/${selectedMonthForDay}`
       );
       const results = res.data.results || [];
       setDayData(results);
@@ -137,9 +136,8 @@ const DashboardPage = () => {
   const fetchMonthData = async () => {
     try {
       setIsLoadingMonth(true);
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
       const res = await axiosInstance.get(
-        `${apiUrl}/api/report/report-sum-sale-per-month/${selectedYearForMonth}`
+        `/api/report/report-sum-sale-per-month/${selectedYearForMonth}`
       );
       const results = res.data.results || [];
       setMonthData(results);

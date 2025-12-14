@@ -80,8 +80,7 @@ const FoodSizePage = () => {
 
   const fetchData = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const response = await axiosInstance.get(`${apiUrl}/api/food-size/list`);
+      const response = await axiosInstance.get('/api/food-size/list');
       setFoodSizes(response.data.result || []);
     } catch (error: any) {
       toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูลขนาดอาหาร", {
@@ -92,8 +91,7 @@ const FoodSizePage = () => {
 
   const fetchDataFoodType = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const response = await axiosInstance.get(`${apiUrl}/api/food-type/list`);
+      const response = await axiosInstance.get('/api/food-type/list');
       setFoodTypes(response.data.result || []);
     } catch (error: any) {
       toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูลประเภทอาหาร", {
@@ -140,12 +138,11 @@ const FoodSizePage = () => {
         id: id,
       };
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
       if (id === 0) {
-        await axiosInstance.post(`${apiUrl}/api/food-size/create`, payload);
+        await axiosInstance.post('/api/food-size/create', payload);
         toast.success("เพิ่มขนาดอาหารสำเร็จ");
       } else {
-        await axiosInstance.put(`${apiUrl}/api/food-size/update/${id}`, payload);
+        await axiosInstance.put(`/api/food-size/update/${id}`, payload);
         toast.success("แก้ไขขนาดอาหารสำเร็จ");
       }
       fetchData();
@@ -167,8 +164,7 @@ const FoodSizePage = () => {
     if (!deleteId) return;
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      await axiosInstance.delete(`${apiUrl}/api/food-size/delete/${deleteId}`);
+      await axiosInstance.delete(`/api/food-size/delete/${deleteId}`);
       toast.success("ลบขนาดอาหารสำเร็จ");
       fetchData();
       setDeleteId(null);

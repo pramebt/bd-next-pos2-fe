@@ -3,6 +3,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import axiosInstance from '@/lib/axios';
+import { getImageUrl } from '@/lib/config';
 import { toast } from 'sonner';
 import { Plus, Edit, Trash2, Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -76,7 +77,6 @@ const FoodPaginatePage = () => {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [selectedImage, setSelectedImage] = useState<{ src: string; alt: string } | null>(null);
   const isFirstLoad = useRef(true);
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     // Fetch data automatically only on first load
@@ -98,8 +98,7 @@ const FoodPaginatePage = () => {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const res = await axiosInstance.post(`${apiUrl}/api/food/paginate`, {
+      const res = await axiosInstance.post('/api/food/paginate', {
         page: currentPage,
         limit: limit,
       });
@@ -120,7 +119,7 @@ const FoodPaginatePage = () => {
     if (!deleteId) return;
     
     try {
-      await axiosInstance.delete(`${apiUrl}/api/food-paginate/delete/${deleteId}`);
+      await axiosInstance.delete(`/api/food-paginate/delete/${deleteId}`);
       
       toast.success("ลบข้อมูลอาหารสำเร็จ");
       setDeleteId(null);
@@ -215,11 +214,11 @@ const FoodPaginatePage = () => {
                       <div className="flex gap-4">
                         <div className="shrink-0">
                           <img
-                            src={`${apiUrl}/uploads/${item.img}`}
+                            src={getImageUrl(`uploads/${item.img}`)}
                             alt={item.name}
                             className="w-24 h-24 object-contain rounded-lg border-2 border-gray-200 cursor-pointer hover:border-primary hover:shadow-md transition-all bg-gray-50 p-1"
                             onClick={() => setSelectedImage({ 
-                              src: `${apiUrl}/uploads/${item.img}`, 
+                              src: getImageUrl(`uploads/${item.img}`), 
                               alt: item.name 
                             })}
                           />
@@ -234,7 +233,7 @@ const FoodPaginatePage = () => {
                                 className="h-8 w-8"
                                 title="ดูรูปภาพ"
                                 onClick={() => setSelectedImage({ 
-                                  src: `${apiUrl}/uploads/${item.img}`, 
+                                  src: getImageUrl(`uploads/${item.img}`), 
                                   alt: item.name 
                                 })}
                               >
@@ -325,11 +324,11 @@ const FoodPaginatePage = () => {
                         <TableCell>
                           <div className="flex items-center justify-center">
                             <img
-                              src={`${apiUrl}/uploads/${item.img}`}
+                              src={getImageUrl(`uploads/${item.img}`)}
                               alt={item.name}
                               className="w-20 h-20 object-contain rounded-lg cursor-pointer hover:border-primary hover:shadow-md transition-all bg-gray-50 p-1 border-2 border-gray-200"
                               onClick={() => setSelectedImage({ 
-                                src: `${apiUrl}/uploads/${item.img}`, 
+                                src: getImageUrl(`uploads/${item.img}`), 
                                 alt: item.name 
                               })}
                             />
@@ -366,7 +365,7 @@ const FoodPaginatePage = () => {
                               variant="outline"
                               size="icon"
                               onClick={() => setSelectedImage({ 
-                                src: `${apiUrl}/uploads/${item.img}`, 
+                                src: getImageUrl(`uploads/${item.img}`), 
                                 alt: item.name 
                               })}
                               className="h-9 w-9 hover:bg-primary hover:text-primary-foreground transition-colors"

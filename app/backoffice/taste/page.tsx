@@ -59,8 +59,7 @@ const TastePage = () => {
 
     const fetchDataTaste = async () => {
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-            const response = await axiosInstance.get(`${apiUrl}/api/taste/list`);
+            const response = await axiosInstance.get('/api/taste/list');
             setTastes(response.data.result || []);
         } catch (error: any) {
             toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูลรสชาติ", {
@@ -71,8 +70,7 @@ const TastePage = () => {
 
     const fetchDataFoodType = async () => {
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-            const response = await axiosInstance.get(`${apiUrl}/api/food-type/list`);
+            const response = await axiosInstance.get('/api/food-type/list');
             if (response.data.result.length > 0) {
                 setFoodTypes(response.data.result);
                 setFoodTypeId(response.data.result[0].id);
@@ -100,11 +98,10 @@ const TastePage = () => {
                 foodTypeId: foodTypeId,
                 id: id,
             }
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
             if (id === 0) {
-                await axiosInstance.post(`${apiUrl}/api/taste/create`, payload);
+                await axiosInstance.post('/api/taste/create', payload);
             } else {
-                await axiosInstance.post(`${apiUrl}/api/taste/update`, payload);
+                await axiosInstance.post('/api/taste/update', payload);
             }
             toast.success("บันทึกข้อมูลรสชาติสำเร็จ");
             fetchDataTaste();
@@ -120,8 +117,7 @@ const TastePage = () => {
     const handleDelete = async () => {
         if (!deleteId) return;
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-            await axiosInstance.delete(`${apiUrl}/api/taste/delete`, { data: { id: deleteId } });
+            await axiosInstance.delete('/api/taste/delete', { data: { id: deleteId } });
         
         toast.success("ลบข้อมูลรสชาติสำเร็จ");
         fetchDataTaste();
