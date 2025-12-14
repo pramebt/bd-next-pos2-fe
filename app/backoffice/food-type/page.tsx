@@ -57,7 +57,7 @@ const FoodTypePage = () => {
   const [deleteFoodTypeName, setDeleteFoodTypeName] = useState<string>("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
-
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
   useEffect(() => {
     fetchData();
   }, []);
@@ -87,7 +87,7 @@ const FoodTypePage = () => {
   const fetchData = async () => {
     try {
       setIsFetching(true);
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      
       const response = await axiosInstance.get(`${apiUrl}/api/food-type/list`);
       const data = response.data.result || [];
       setFoodTypes(data);
@@ -103,7 +103,7 @@ const FoodTypePage = () => {
 
   const checkFoodCount = async (foodTypeId: number) => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      
       const response = await axiosInstance.get(`${apiUrl}/api/food/list`);
       const foods = response.data.result || [];
       const count = foods.filter((food: any) => food.foodTypeId === foodTypeId).length;
@@ -141,7 +141,6 @@ const FoodTypePage = () => {
         remark: trimmedRemark,
         id: id,
       };
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
       if (id === 0) {
         await axiosInstance.post(`${apiUrl}/api/food-type/create`, payload);
@@ -181,7 +180,6 @@ const FoodTypePage = () => {
     if (!deleteId) return;
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
       await axiosInstance.delete(`${apiUrl}/api/food-type/delete/${deleteId}`);
       toast.success("ลบประเภทอาหารสำเร็จ");
       fetchData();

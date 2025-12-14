@@ -76,6 +76,7 @@ const FoodPaginatePage = () => {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [selectedImage, setSelectedImage] = useState<{ src: string; alt: string } | null>(null);
   const isFirstLoad = useRef(true);
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     // Fetch data automatically only on first load
@@ -97,7 +98,7 @@ const FoodPaginatePage = () => {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
       const res = await axiosInstance.post(`${apiUrl}/api/food/paginate`, {
         page: currentPage,
         limit: limit,
@@ -119,15 +120,14 @@ const FoodPaginatePage = () => {
     if (!deleteId) return;
     
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      await axiosInstance.delete(`${apiUrl}/api/food/delete/${deleteId}`);
+      await axiosInstance.delete(`${apiUrl}/api/food-paginate/delete/${deleteId}`);
       
       toast.success("ลบข้อมูลอาหารสำเร็จ");
       setDeleteId(null);
       
       // If current page becomes empty after deletion, go to previous page
       if (foods.length === 1 && currentPage > 1) {
-        setCurrentPage(currentPage - 1);
+        setCurrentPage(currentPage - 1);  
       } else {
         fetchData();
       }
@@ -153,7 +153,6 @@ const FoodPaginatePage = () => {
     return foodType === "food" ? "อาหาร" : foodType === "drink" ? "เครื่องดื่ม" : "";
   };
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   // Calculate pagination info
   const startItem = totalItems === 0 ? 0 : (currentPage - 1) * limit + 1;
