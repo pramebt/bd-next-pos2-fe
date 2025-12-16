@@ -113,24 +113,6 @@ const SaleTempPage = () => {
     return sum;
   };
 
-  const generateSaleTempDetail = async (saleTempId: number) => {
-    try {
-      const payload = {
-        saleTempId: saleTempId,
-      };
-      await axiosInstance.post(
-        '/api/sale-temp/create-sale-temp-detail',
-        payload
-      );
-      await fetchDataSaleTemp();
-      fetchDataSaleTempInfo(saleTempId);
-    } catch (error) {
-      toast.error("เกิดข้อผิดพลาด", {
-        description: getErrorMessage(error),
-      });
-    }
-  };
-
   const sumAmount = (saleTemps: SaleTemp[]) => {
     let total = 0;
     saleTemps.forEach((item) => (total += item.Food.price * item.qty));
