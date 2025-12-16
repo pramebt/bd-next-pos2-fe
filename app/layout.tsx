@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Kanit } from "next/font/google";
 
 import { Toaster } from "sonner";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import "./globals.css";
 
 const kanit = Kanit({ 
@@ -24,7 +25,9 @@ export default function RootLayout({
   return (
     <html lang="th" className={kanit.variable}>
       <body className={kanit.className}>
-        {children}
+        <ErrorBoundary>
+          {children}
+        </ErrorBoundary>
         <Toaster />
       </body>
     </html>
