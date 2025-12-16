@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { TOKEN_KEY } from "@/lib/config";
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -97,7 +98,7 @@ export default function Sidebar() {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem("user");
     localStorage.removeItem("next_name");
     localStorage.removeItem("next_user_id");

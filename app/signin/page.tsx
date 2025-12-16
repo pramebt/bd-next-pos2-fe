@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
-import { API_URL, TOKEN_KEY } from "@/lib/config";
+import axiosInstance from "@/lib/axios";
+import { TOKEN_KEY } from "@/lib/config";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -24,8 +24,8 @@ export default function SignInPage() {
         password,
       };
 
-      const res = await axios.post(
-        `${API_URL}/api/user/signIn`,
+      const res = await axiosInstance.post(
+        `/api/user/signIn`,
         payload
       );
 

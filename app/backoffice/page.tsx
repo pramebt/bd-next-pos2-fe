@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LayoutDashboard, ShoppingBag, Utensils, Users } from "lucide-react";
+import { TOKEN_KEY } from "@/lib/config";
 
 export default function BackOfficePage() {
   const router = useRouter();
@@ -11,7 +12,7 @@ export default function BackOfficePage() {
 
   useEffect(() => {
     // Check if user is logged in
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem(TOKEN_KEY);
     if (!token) {
       router.push("/signin");
       return;
