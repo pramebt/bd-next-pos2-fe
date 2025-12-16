@@ -16,6 +16,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { getImageUrl } from "@/lib/config";
+import type { Organization, ApiResponse } from "@/types/api";
+import { getErrorMessage } from "@/lib/error-handler";
 
 const OrganizationPage = () => {
   const [name, setName] = useState("");
@@ -28,8 +31,10 @@ const OrganizationPage = () => {
   const [taxCode, setTaxCode] = useState("");
   const [fileSelected, setFileSelected] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const handleFileChange = (e: any) => {
-    setFileSelected(e.target.files[0]);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFileSelected(e.target.files[0]);
+    }
   };
 
   const uploadFile = async () => {
@@ -47,10 +52,10 @@ const OrganizationPage = () => {
       );
       setLogo(response.data.fileName);
       return response.data.fileName;
-    } catch (error: any) {
-      toast.error(
-        error.response?.data?.message || "เกิดข้อผิดพลาดในการอัปโหลดไฟล์"
-      );
+    } catch (error) {
+      toast.error("เกิดข้อผิดพลาดในการอัปโหลดไฟล์", {
+        description: getErrorMessage(error),
+      });
       throw error;
     }
   };
@@ -61,7 +66,7 @@ const OrganizationPage = () => {
 
   const fetchData = async () => {
     try {
-      const response = await axiosInstance.get('/api/organization/info');
+      const response = await axiosInstance.get<ApiResponse<Organization>>('/api/organization/info');
 
       if (response.data.result) {
         setName(response.data.result.name || "");
@@ -73,10 +78,10 @@ const OrganizationPage = () => {
         setLogo(response.data.result.logo || "");
         setTaxCode(response.data.result.taxCode || "");
       }
-    } catch (error: any) {
-      toast.error(
-        error.response?.data?.message || "เกิดข้อผิดพลาดในการโหลดข้อมูล"
-      );
+    } catch (error) {
+      toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูล", {
+        description: getErrorMessage(error),
+      });
     }
   };
 
@@ -122,10 +127,10 @@ const OrganizationPage = () => {
       toast.success("บันทึกข้อมูลสำเร็จ");
       fetchData();
       setFileSelected(null);
-    } catch (error: any) {
-      toast.error(
-        error.response?.data?.message || "เกิดข้อผิดพลาดในการบันทึกข้อมูล"
-      );
+    } catch (error) {
+      toast.error("เกิดข้อผิดพลาดในการบันทึกข้อมูล", {
+        description: getErrorMessage(error),
+      });
     } finally {
       setIsLoading(false);
     }

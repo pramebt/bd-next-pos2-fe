@@ -54,35 +54,21 @@ import {
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import Modal from "@/components/shared/Mymodal";
-interface FoodTypeProps {
-  id: number;
-  name: string;
-  remark: string;
-}
-
-interface FoodProps {
-  id: number;
-  name: string;
-  remark: string;
-  price: number;
-  img: string;
-  foodType: string;
-  foodTypeId: number;
-  FoodType?: FoodTypeProps;
-}
+import type { FoodType, Food, ApiResponse } from "@/types/api";
+import { AxiosError } from "axios";
 
 const FoodPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [foodTypeId, setFoodTypeId] = useState<number>(0);
-  const [foodTypes, setFoodTypes] = useState<FoodTypeProps[]>([]);
+  const [foodTypes, setFoodTypes] = useState<FoodType[]>([]);
   const [name, setName] = useState("");
   const [remark, setRemark] = useState("");
   const [id, setId] = useState(0);
   const [price, setPrice] = useState(0);
   const [img, setImg] = useState("");
   const [myFile, setMyFile] = useState<File | null>(null);
-  const [foods, setFoods] = useState<FoodProps[]>([]);
+  const [foods, setFoods] = useState<Food[]>([]);
   const [FoodType, setFoodType] = useState("food");
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [selectedImage, setSelectedImage] = useState<{ src: string; alt: string } | null>(null);
@@ -94,22 +80,22 @@ const FoodPage = () => {
 
   const fetchDataFoodType = async () => {
     try {
-      const response = await axiosInstance.get('/api/food-type/list');
+      const response = await axiosInstance.get<ApiResponse<FoodType[]>>('/api/food-type/list');
       
-      if (response.data.result.length > 0) {
+      if (response.data.result && response.data.result.length > 0) {
         setFoodTypes(response.data.result);
         setFoodTypeId(response.data.result[0].id);
       }
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูลประเภทอาหาร");
     }
   }
 
   const fetchDataFood = async () => {
     try {
-      const response = await axiosInstance.get('/api/food/list');
+      const response = await axiosInstance.get<ApiResponse<Food[]>>('/api/food/list');
       setFoods(response.data.result || []);
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูลอาหาร");
     }
   }
@@ -123,11 +109,11 @@ const FoodPage = () => {
     formData.append("myFile", myFile);
 
     try {
-      const response = await axiosInstance.post('/api/food/upload-image', formData);
+      const response = await axiosInstance.post<{ fileName: string }>('/api/food/upload-image', formData);
       
       return response.data.fileName;
 
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ");
       return null;
     }
@@ -191,7 +177,7 @@ const FoodPage = () => {
       fetchDataFood();
       clearForm();
       setIsModalOpen(false);
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาดในการบันทึกข้อมูลอาหาร");
     }
     finally {
@@ -206,12 +192,12 @@ const FoodPage = () => {
       toast.success("ลบข้อมูลอาหารสำเร็จ");
       fetchDataFood();
       setDeleteId(null);
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาดในการลบข้อมูลอาหาร");
     }
   }
   
-  const editFood = (food: FoodProps) => {
+  const editFood = (food: Food) => {
     setId(food.id);
     setName(food.name);
     setRemark(food.remark || "");

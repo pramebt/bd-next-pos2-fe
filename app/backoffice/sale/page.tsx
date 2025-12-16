@@ -52,18 +52,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import type { Food, SaleTemp, SaleTempDetail, SaleTempInfo, Taste, FoodSize, ApiResponse, PayType } from "@/types/api";
+import { getErrorMessage } from "@/lib/error-handler";
 
 const SaleTempPage = () => {
   const [table, setTable] = useState(1);
-  const [foods, setFoods] = useState([]);
-  const [saleTemps, setSaleTemps] = useState([]);
-  const [tastes, setTastes] = useState([]);
-  const [sizes, setSizes] = useState([]);
+  const [foods, setFoods] = useState<Food[]>([]);
+  const [saleTemps, setSaleTemps] = useState<SaleTemp[]>([]);
+  const [tastes, setTastes] = useState<Taste[]>([]);
+  const [sizes, setSizes] = useState<FoodSize[]>([]);
   const [amount, setAmount] = useState(0);
   const [amountAdded, setAmountAdded] = useState(0);
-  const [saleTempDetails, setSaleTempDetails] = useState([]);
+  const [saleTempDetails, setSaleTempDetails] = useState<SaleTempDetail[]>([]);
   const [saleTempId, setSaleTempId] = useState(0);
-  const [payType, setPayType] = useState("cash");
+  const [payType, setPayType] = useState<PayType>("cash");
   const [inputMoney, setInputMoney] = useState(0);
   const [billUrl, setBillUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -79,7 +81,7 @@ const SaleTempPage = () => {
     fetchDataSaleTemp();
   }, []);
 
-  const openModalEdit = (item: any) => {
+  const openModalEdit = (item: SaleTemp) => {
     setSaleTempId(item.id);
     setIsModalOpen(true);
     fetchDataSaleTempInfo(item.id);
@@ -87,20 +89,20 @@ const SaleTempPage = () => {
 
   const fetchDataSaleTempInfo = async (saleTempId: number) => {
     try {
-      const res = await axiosInstance.get(
+      const res = await axiosInstance.get<{ results: SaleTempInfo }>(
         `/api/sale-temp/info/${saleTempId}`
       );
-      setSaleTempDetails(res.data.results.SaleTempDetails);
+      setSaleTempDetails(res.data.results.SaleTempDetails || []);
       setTastes(res.data.results.Food?.FoodType?.Tastes || []);
       setSizes(res.data.results.Food?.FoodType?.FoodSizes || []);
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description: error.response?.data?.message || error.message || "ไม่สามารถโหลดข้อมูลได้",
+        description: getErrorMessage(error),
       });
     }
   };
 
-  const sumMoneyAdded = (saleTempDetails: any) => {
+  const sumMoneyAdded = (saleTempDetails: SaleTempDetail[]) => {
     let sum = 0;
 
     for (let i = 0; i < saleTempDetails.length; i++) {
@@ -122,27 +124,27 @@ const SaleTempPage = () => {
       );
       await fetchDataSaleTemp();
       fetchDataSaleTempInfo(saleTempId);
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description: error.response?.data?.message || error.message || "ไม่สามารถสร้างรายละเอียดได้",
+        description: getErrorMessage(error),
       });
     }
   };
 
-  const sumAmount = (saleTemps: any) => {
+  const sumAmount = (saleTemps: SaleTemp[]) => {
     let total = 0;
-    saleTemps.forEach((item: any) => (total += item.Food.price * item.qty));
+    saleTemps.forEach((item) => (total += item.Food.price * item.qty));
 
     setAmount(total);
   };
 
   const getFoods = async () => {
     try {
-      const res = await axiosInstance.get('/api/food/list');
+      const res = await axiosInstance.get<ApiResponse<Food[]>>('/api/food/list');
       setFoods(res.data.result || []);
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description: error.response?.data?.message || error.message || "ไม่สามารถโหลดข้อมูลอาหารได้",
+        description: getErrorMessage(error),
       });
     }
   };
@@ -152,14 +154,14 @@ const SaleTempPage = () => {
       if (foodType === "all") {
         await getFoods();
       } else {
-      const res = await axiosInstance.get(
+      const res = await axiosInstance.get<ApiResponse<Food[]>>(
           `/api/food/filter/${foodType}`
       );
         setFoods(res.data.result || []);
       }
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description: error.response?.data?.message || error.message || "ไม่สามารถกรองข้อมูลได้",
+        description: getErrorMessage(error),
       });
     }
   };
@@ -174,30 +176,30 @@ const SaleTempPage = () => {
       await axiosInstance.post('/api/sale-temp/create', payload);
       fetchDataSaleTemp();
       toast.success("เพิ่มรายการสำเร็จ");
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description: error.response?.data?.message || error.message || "ไม่สามารถเพิ่มรายการได้",
+        description: getErrorMessage(error),
       });
     }
   };
 
   const fetchDataSaleTemp = async () => {
     try {
-      const res = await axiosInstance.get('/api/sale-temp/list');
+      const res = await axiosInstance.get<ApiResponse<SaleTemp[]>>('/api/sale-temp/list');
       const results = res.data.result || [];
       setSaleTemps(results);
       sumAmount(results);
 
       let sum = 0;
-      results.forEach((item: any) => {
+      results.forEach((item) => {
         sum += sumMoneyAdded(item.SaleTempDetails || []);
       });
 
       sumAmount(results);
       setAmountAdded(sum);
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description: error.response?.data?.message || error.message || "ไม่สามารถโหลดข้อมูลได้",
+        description: getErrorMessage(error),
       });
     }
   };
@@ -210,9 +212,9 @@ const SaleTempPage = () => {
         fetchDataSaleTemp();
       toast.success("ลบรายการสำเร็จ");
       setDeleteSaleTempId(null);
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description: error.response?.data?.message || error.message || "ไม่สามารถลบรายการได้",
+        description: getErrorMessage(error),
       });
     }
   };
@@ -229,9 +231,9 @@ const SaleTempPage = () => {
         fetchDataSaleTemp();
       toast.success("ลบรายการทั้งหมดสำเร็จ");
       setShowDeleteAllDialog(false);
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description: error.response?.data?.message || error.message || "ไม่สามารถลบรายการได้",
+        description: getErrorMessage(error),
       });
     }
   };
@@ -244,9 +246,9 @@ const SaleTempPage = () => {
       };
       await axiosInstance.delete('/api/sale-temp/update-qty', { data: payload });
       fetchDataSaleTemp();
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description: error.response?.data?.message || error.message || "ไม่สามารถอัปเดตจำนวนได้",
+        description: getErrorMessage(error),
       });
     }
   };
@@ -264,9 +266,9 @@ const SaleTempPage = () => {
       };
       await axiosInstance.put('/api/sale-temp/select-taste', payload);
       await fetchDataSaleTempInfo(saleTempId);
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description: error.response?.data?.message || error.message || "ไม่สามารถเลือกรสชาติได้",
+        description: getErrorMessage(error),
       });
     } finally {
       setTasteLoadingId(null);
@@ -287,9 +289,9 @@ const SaleTempPage = () => {
         payload
       );
       await fetchDataSaleTempInfo(saleTempId);
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description: error.response?.data?.message || error.message || "ไม่สามารถยกเลิกรสชาติได้",
+        description: getErrorMessage(error),
       });
     } finally {
       setTasteLoadingId(null);
@@ -309,9 +311,9 @@ const SaleTempPage = () => {
       await axiosInstance.put('/api/sale-temp/select-size', payload);
       await fetchDataSaleTempInfo(saleTempId);
       await fetchDataSaleTemp();
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description: error.response?.data?.message || error.message || "ไม่สามารถเลือกขนาดได้",
+        description: getErrorMessage(error),
       });
     }
   };
@@ -324,9 +326,9 @@ const SaleTempPage = () => {
       await axiosInstance.put('/api/sale-temp/unselect-size', payload);
       await fetchDataSaleTempInfo(saleTempId);
       await fetchDataSaleTemp();
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description: error.response?.data?.message || error.message || "ไม่สามารถยกเลิกขนาดได้",
+        description: getErrorMessage(error),
       });
     }
   };
@@ -343,9 +345,9 @@ const SaleTempPage = () => {
       await fetchDataSaleTemp();
       fetchDataSaleTempInfo(saleTempId);
       toast.success("เพิ่มรายละเอียดสำเร็จ");
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description: error.response?.data?.message || error.message || "ไม่สามารถสร้างรายละเอียดได้",
+        description: getErrorMessage(error),
       });
     }
   };
@@ -362,9 +364,9 @@ const SaleTempPage = () => {
       await fetchDataSaleTemp();
       fetchDataSaleTempInfo(saleTempId);
       toast.success("ลบรายละเอียดสำเร็จ");
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description: error.response?.data?.message || error.message || "ไม่สามารถลบรายละเอียดได้",
+        description: getErrorMessage(error),
       });
     }
   };
@@ -383,9 +385,9 @@ const SaleTempPage = () => {
         setBillUrl(res.data.fileName);
         setShowPrintDialog(true);
       }, 500);
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description: error.response?.data?.message || error.message || "ไม่สามารถพิมพ์บิลได้",
+        description: getErrorMessage(error),
       });
     }
   };
@@ -407,9 +409,9 @@ const SaleTempPage = () => {
       setShowEndSaleDialog(false);
       setInputMoney(0);
         printBillAfterPay();
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description: error.response?.data?.message || error.message || "ไม่สามารถจบการขายได้",
+        description: getErrorMessage(error),
       });
     }
   };
@@ -426,9 +428,9 @@ const SaleTempPage = () => {
         setBillUrl(res.data.fileName);
         setShowPrintDialog(true);
       }, 300);
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description: error.response?.data?.message || error.message || "ไม่สามารถพิมพ์บิลได้",
+        description: getErrorMessage(error),
       });
     }
   };
@@ -537,7 +539,7 @@ const SaleTempPage = () => {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-                  {foods.map((food: any) => (
+                  {foods.map((food) => (
                     <Card
                       key={food.id}
                       className="cursor-pointer hover:shadow-md transition-all border-2 hover:border-primary/50 group overflow-hidden"
@@ -630,7 +632,7 @@ const SaleTempPage = () => {
                     <p className="text-xs sm:text-sm mt-1">เลือกอาหารเพื่อเพิ่มลงตะกร้า</p>
                   </div>
                 ) : (
-                  saleTemps.map((item: any) => (
+                  saleTemps.map((item) => (
                     <Card key={item.id} className="border border-border/50 hover:border-primary/50 hover:shadow-sm transition-all duration-200">
                       <CardContent className="p-2.5 sm:p-3">
                         <div className="space-y-2.5">
@@ -680,7 +682,7 @@ const SaleTempPage = () => {
                               variant="outline"
                               size="sm"
                               className="h-7 w-7 sm:h-8 sm:w-8 p-0 shrink-0 hover:bg-muted transition-colors"
-                              disabled={item.SaleTempDetails?.length > 0 || item.qty <= 0}
+                              disabled={(item.SaleTempDetails?.length ?? 0) > 0 || item.qty <= 0}
                               onClick={() => {
                                 if (item.qty > 0) {
                                   updateQty(item.id, item.qty - 1);
@@ -698,7 +700,7 @@ const SaleTempPage = () => {
                               variant="outline"
                               size="sm"
                               className="h-7 w-7 sm:h-8 sm:w-8 p-0 shrink-0 hover:bg-muted transition-colors"
-                              disabled={item.SaleTempDetails?.length > 0}
+                              disabled={(item.SaleTempDetails?.length ?? 0) > 0}
                               onClick={() => updateQty(item.id, item.qty + 1)}
                             >
                               <Plus className="h-3 w-3" />
@@ -743,7 +745,7 @@ const SaleTempPage = () => {
                <>
                  {/* Mobile Card View */}
                  <div className="block md:hidden space-y-3 sm:space-y-4">
-                   {saleTempDetails.map((detail: any) => (
+                   {saleTempDetails.map((detail) => (
                      <Card key={detail.id} className="border">
                        <CardContent className="p-4 space-y-3 sm:space-y-4">
                          {/* Header with food name and delete button */}
@@ -770,7 +772,7 @@ const SaleTempPage = () => {
                              <p className="text-xs sm:text-sm text-muted-foreground">ไม่มีรสชาติ</p>
                            ) : (
                              <div className="flex flex-wrap gap-2">
-                               {tastes.map((taste: any) => {
+                               {tastes.map((taste) => {
                                  const isSelected = detail.Taste?.id === taste.id;
                                  const isLoading = tasteLoadingId === detail.id;
                                  return (
@@ -799,11 +801,11 @@ const SaleTempPage = () => {
                          {/* Sizes Section */}
                          <div className="space-y-2">
                            <Label className="text-sm sm:text-base font-semibold text-muted-foreground">ขนาด</Label>
-                           {sizes.filter((s: any) => s.moneyAdded > 0).length === 0 ? (
+                           {sizes.filter((s) => s.moneyAdded > 0).length === 0 ? (
                              <p className="text-xs sm:text-sm text-muted-foreground">ไม่มีขนาด</p>
                            ) : (
                              <div className="flex flex-wrap gap-2">
-                               {sizes.map((size: any) => (
+                               {sizes.map((size) => (
                                  size.moneyAdded > 0 && (
                                    <Button
                                      key={size.id}
@@ -843,7 +845,7 @@ const SaleTempPage = () => {
                          </tr>
                        </thead>
                        <tbody>
-                         {saleTempDetails.map((detail: any) => (
+                         {saleTempDetails.map((detail) => (
                            <tr key={detail.id} className="border-t hover:bg-muted/30 transition-colors">
                              <td className="p-3 sm:p-4 text-center">
                                <Button
@@ -863,7 +865,7 @@ const SaleTempPage = () => {
                                  {tastes.length === 0 ? (
                                    <span className="text-xs sm:text-sm text-muted-foreground">ไม่มีรสชาติ</span>
                                  ) : (
-                                   tastes.map((taste: any) => {
+                                   tastes.map((taste) => {
                                      const isSelected = detail.Taste?.id === taste.id;
                                      const isLoading = tasteLoadingId === detail.id;
                                      return (
@@ -890,10 +892,10 @@ const SaleTempPage = () => {
                              </td>
                              <td className="p-3 sm:p-4">
                                <div className="flex flex-wrap gap-2 justify-center">
-                                 {sizes.filter((s: any) => s.moneyAdded > 0).length === 0 ? (
+                                 {sizes.filter((s) => s.moneyAdded > 0).length === 0 ? (
                                    <span className="text-xs sm:text-sm text-muted-foreground">ไม่มีขนาด</span>
                                  ) : (
-                                   sizes.map((size: any) => (
+                                   sizes.map((size) => (
                                      size.moneyAdded > 0 && (
                                        <Button
                                          key={size.id}

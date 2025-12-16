@@ -35,19 +35,15 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import Modal from "@/components/shared/Mymodal";
-
-interface FoodTypeProps {
-  id: number;
-  name: string;
-  remark: string;
-}
+import type { FoodType, Food, ApiResponse } from "@/types/api";
+import { getErrorMessage } from "@/lib/error-handler";
 
 const FoodTypePage = () => {
   const [id, setId] = useState(0);
   const [name, setName] = useState("");
   const [remark, setRemark] = useState("");
-  const [foodTypes, setFoodTypes] = useState<FoodTypeProps[]>([]);
-  const [filteredFoodTypes, setFilteredFoodTypes] = useState<FoodTypeProps[]>([]);
+  const [foodTypes, setFoodTypes] = useState<FoodType[]>([]);
+  const [filteredFoodTypes, setFilteredFoodTypes] = useState<FoodType[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -87,13 +83,13 @@ const FoodTypePage = () => {
     try {
       setIsFetching(true);
       
-      const response = await axiosInstance.get('/api/food-type/list');
+      const response = await axiosInstance.get<ApiResponse<FoodType[]>>('/api/food-type/list');
       const data = response.data.result || [];
       setFoodTypes(data);
       setFilteredFoodTypes(data);
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูล", {
-        description: error.message || "ไม่สามารถโหลดข้อมูลประเภทอาหารได้",
+        description: getErrorMessage(error),
       });
     } finally {
       setIsFetching(false);
@@ -103,9 +99,9 @@ const FoodTypePage = () => {
   const checkFoodCount = async (foodTypeId: number) => {
     try {
       
-      const response = await axiosInstance.get('/api/food/list');
+      const response = await axiosInstance.get<ApiResponse<Food[]>>('/api/food/list');
       const foods = response.data.result || [];
-      const count = foods.filter((food: any) => food.foodTypeId === foodTypeId).length;
+      const count = foods.filter((food) => food.foodTypeId === foodTypeId).length;
       return count;
     } catch (error) {
       return 0;
@@ -152,12 +148,9 @@ const FoodTypePage = () => {
       fetchData();
       clearForm();
       setIsModalOpen(false);
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description:
-          error.response?.data?.message ||
-          error.message ||
-          "ไม่สามารถบันทึกข้อมูลได้",
+        description: getErrorMessage(error),
       });
     } finally {
       setIsLoading(false);
@@ -186,17 +179,14 @@ const FoodTypePage = () => {
       setDeleteId(null);
       setFoodCount(0);
       setDeleteFoodTypeName("");
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description:
-          error.response?.data?.message ||
-          error.message ||
-          "ไม่สามารถลบข้อมูลได้",
+        description: getErrorMessage(error),
       });
     }
   };
 
-  const handleDeleteClick = async (foodType: FoodTypeProps) => {
+  const handleDeleteClick = async (foodType: FoodType) => {
     setDeleteId(foodType.id);
     setDeleteFoodTypeName(foodType.name);
     setIsDeleteDialogOpen(true);
@@ -204,7 +194,7 @@ const FoodTypePage = () => {
     setFoodCount(count);
   };
 
-  const editFoodType = (foodType: FoodTypeProps) => {
+  const editFoodType = (foodType: FoodType) => {
     setId(foodType.id);
     setName(foodType.name);
     setRemark(foodType.remark || "");

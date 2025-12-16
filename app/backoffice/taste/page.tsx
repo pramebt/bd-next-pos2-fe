@@ -23,28 +23,13 @@ import { Edit, Loader2, Plus, Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react'
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
-
-interface TasteProps {
-  id: number;
-  name: string;
-  remark: string;
-  foodTypeId: number;
-  FoodType?: {
-    id: number;
-    name: string;
-  };
-}
-
-interface FoodTypeProps {
-  id: number;
-  name: string;
-  remark: string;
-}
+import type { Taste, FoodType, ApiResponse } from "@/types/api";
+import { getErrorMessage } from "@/lib/error-handler";
 
 const TastePage = () => {
-    const [foodTypes, setFoodTypes] = useState<FoodTypeProps[]>([]);
+    const [foodTypes, setFoodTypes] = useState<FoodType[]>([]);
     const [foodTypeId, setFoodTypeId] = useState<number>(0);
-    const [tastes, setTastes] = useState<TasteProps[]>([]);
+    const [tastes, setTastes] = useState<Taste[]>([]);
     const [name, setName] = useState("");
     const [id, setId] = useState(0);
     const [remark, setRemark] = useState("");
@@ -59,24 +44,26 @@ const TastePage = () => {
 
     const fetchDataTaste = async () => {
         try {
-            const response = await axiosInstance.get('/api/taste/list');
+            const response = await axiosInstance.get<ApiResponse<Taste[]>>('/api/taste/list');
             setTastes(response.data.result || []);
-        } catch (error: any) {
+        } catch (error) {
             toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูลรสชาติ", {
-                description: error.message || "ไม่สามารถโหลดข้อมูลได้",
+                description: getErrorMessage(error),
             });
         }
     }
 
     const fetchDataFoodType = async () => {
         try {
-            const response = await axiosInstance.get('/api/food-type/list');
-            if (response.data.result.length > 0) {
+            const response = await axiosInstance.get<ApiResponse<FoodType[]>>('/api/food-type/list');
+            if (response.data.result && response.data.result.length > 0) {
                 setFoodTypes(response.data.result);
                 setFoodTypeId(response.data.result[0].id);
             }
-        } catch (error: any) {
-            toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูลประเภทอาหาร")
+        } catch (error) {
+            toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูลประเภทอาหาร", {
+                description: getErrorMessage(error),
+            });
         }
     }
 
@@ -107,8 +94,10 @@ const TastePage = () => {
             fetchDataTaste();
             clearForm();
             setIsModalOpen(false);
-        } catch (error: any) {
-            toast.error("เกิดข้อผิดพลาดในการบันทึกข้อมูลรสชาติ")
+        } catch (error) {
+            toast.error("เกิดข้อผิดพลาดในการบันทึกข้อมูลรสชาติ", {
+                description: getErrorMessage(error),
+            });
         } finally {
             setIsLoading(false);
         }
@@ -122,13 +111,15 @@ const TastePage = () => {
         toast.success("ลบข้อมูลรสชาติสำเร็จ");
         fetchDataTaste();
         setDeleteId(null);
-    } catch (error: any) {
-        toast.error("เกิดข้อผิดพลาดในการลบข้อมูลรสชาติ")
+    } catch (error) {
+        toast.error("เกิดข้อผิดพลาดในการลบข้อมูลรสชาติ", {
+            description: getErrorMessage(error),
+        });
     }
 
     }
 
-    const editTaste = (taste: TasteProps) => {
+    const editTaste = (taste: Taste) => {
         setId(taste.id);
         setName(taste.name);
         setRemark(taste.remark || "");

@@ -42,33 +42,17 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import Modal from "@/components/shared/Mymodal";
-
-interface FoodSizeProps {
-  id: number;
-  name: string;
-  remark: string;
-  foodTypeId: number;
-  moneyAdded: number;
-  foodType?: {
-    id: number;
-    name: string;
-  };
-}
-
-interface FoodTypeProps {
-  id: number;
-  name: string;
-  remark: string;
-}
+import type { FoodSize, FoodType, ApiResponse } from "@/types/api";
+import { getErrorMessage } from "@/lib/error-handler";
 
 const FoodSizePage = () => {
   const [id, setId] = useState(0);
   const [name, setName] = useState("");
   const [remark, setRemark] = useState("");
-  const [foodTypes, setFoodTypes] = useState<FoodTypeProps[]>([]);
+  const [foodTypes, setFoodTypes] = useState<FoodType[]>([]);
   const [foodTypeId, setFoodTypeId] = useState<number>(0);
   const [moneyAdded, setMoneyAdded] = useState<number>(0);
-  const [foodSizes, setFoodSizes] = useState<FoodSizeProps[]>([]);
+  const [foodSizes, setFoodSizes] = useState<FoodSize[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -80,27 +64,27 @@ const FoodSizePage = () => {
 
   const fetchData = async () => {
     try {
-      const response = await axiosInstance.get('/api/food-size/list');
+      const response = await axiosInstance.get<ApiResponse<FoodSize[]>>('/api/food-size/list');
       setFoodSizes(response.data.result || []);
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูลขนาดอาหาร", {
-        description: error.message || "ไม่สามารถโหลดข้อมูลได้",
+        description: getErrorMessage(error),
       });
     }
   };
 
   const fetchDataFoodType = async () => {
     try {
-      const response = await axiosInstance.get('/api/food-type/list');
+      const response = await axiosInstance.get<ApiResponse<FoodType[]>>('/api/food-type/list');
       setFoodTypes(response.data.result || []);
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูลประเภทอาหาร", {
-        description: error.message || "ไม่สามารถโหลดข้อมูลได้",
+        description: getErrorMessage(error),
       });
     }
   };
 
-  const editFoodSize = (foodSize: FoodSizeProps) => {
+  const editFoodSize = (foodSize: FoodSize) => {
     setId(foodSize.id);
     setName(foodSize.name);
     setRemark(foodSize.remark || "");
@@ -148,12 +132,9 @@ const FoodSizePage = () => {
       fetchData();
       clearForm();
       setIsModalOpen(false);
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description:
-          error.response?.data?.message ||
-          error.message ||
-          "ไม่สามารถบันทึกข้อมูลได้",
+        description: getErrorMessage(error),
       });
     } finally {
       setIsLoading(false);
@@ -168,12 +149,9 @@ const FoodSizePage = () => {
       toast.success("ลบขนาดอาหารสำเร็จ");
       fetchData();
       setDeleteId(null);
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description:
-          error.response?.data?.message ||
-          error.message ||
-          "ไม่สามารถลบข้อมูลได้",
+        description: getErrorMessage(error),
       });
     }
   };

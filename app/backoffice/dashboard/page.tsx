@@ -43,6 +43,7 @@ import {
   Filler,
 } from "chart.js";
 import { Line, Bar } from "react-chartjs-2";
+import { getErrorMessage } from "@/lib/error-handler";
 
 // Register Chart.js components
 ChartJS.register(
@@ -121,12 +122,9 @@ const DashboardPage = () => {
       );
       const results = res.data.results || [];
       setDayData(results);
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description:
-          error.response?.data?.message ||
-          error.message ||
-          "ไม่สามารถโหลดข้อมูลยอดขายรายวันได้",
+        description: getErrorMessage(error),
       });
     } finally {
       setIsLoadingDay(false);
@@ -141,12 +139,9 @@ const DashboardPage = () => {
       );
       const results = res.data.results || [];
       setMonthData(results);
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description:
-          error.response?.data?.message ||
-          error.message ||
-          "ไม่สามารถโหลดข้อมูลยอดขายรายเดือนได้",
+        description: getErrorMessage(error),
       });
     } finally {
       setIsLoadingMonth(false);
@@ -208,7 +203,7 @@ const DashboardPage = () => {
       },
       tooltip: {
         callbacks: {
-          label: function (context: any) {
+          label: function (context) {
             return `ยอดขาย: ฿${context.parsed.y.toLocaleString("th-TH")}`;
           },
         },
@@ -218,8 +213,11 @@ const DashboardPage = () => {
       y: {
         beginAtZero: true,
         ticks: {
-          callback: function (value: any) {
-            return "฿" + value.toLocaleString("th-TH");
+          callback: function (value) {
+            if (typeof value === 'number') {
+              return "฿" + value.toLocaleString("th-TH");
+            }
+            return value;
           },
         },
       },

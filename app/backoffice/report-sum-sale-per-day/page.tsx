@@ -38,6 +38,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { getErrorMessage } from "@/lib/error-handler";
 
 interface DayReport {
   date: string;
@@ -97,12 +98,9 @@ const ReportSumSalePerDayPage = () => {
       if (results.length === 0) {
         toast.info("ไม่พบข้อมูลในช่วงเวลาที่เลือก");
       }
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description:
-          error.response?.data?.message ||
-          error.message ||
-          "ไม่สามารถโหลดข้อมูลได้",
+        description: getErrorMessage(error),
       });
     } finally {
       setIsLoading(false);

@@ -49,26 +49,11 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-
-interface FoodTypeProps {
-  id: number;
-  name: string;
-  remark: string;
-}
-
-interface FoodProps {
-  id: number;
-  name: string;
-  remark: string;
-  price: number;
-  img: string;
-  foodType: string;
-  foodTypeId: number;
-  FoodType?: FoodTypeProps;
-}
+import type { Food, FoodType, ApiResponse } from "@/types/api";
+import { getErrorMessage } from "@/lib/error-handler";
 
 const FoodPaginatePage = () => {
-  const [foods, setFoods] = useState<FoodProps[]>([]);
+  const [foods, setFoods] = useState<Food[]>([]);
   const [totalPages, setTotalPages] = useState<number>(0);
   const [totalItems, setTotalItems] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -106,9 +91,9 @@ const FoodPaginatePage = () => {
       setFoods(res.data.result || []);
       setTotalPages(res.data.totalPages || 0);
       setTotalItems(res.data.totalItems || 0);
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description: error.response?.data?.message || error.message || "ไม่สามารถโหลดข้อมูลได้",
+        description: getErrorMessage(error),
       });
     } finally {
       setIsLoading(false);
@@ -130,9 +115,9 @@ const FoodPaginatePage = () => {
       } else {
         fetchData();
       }
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description: error.response?.data?.message || error.message || "ไม่สามารถลบข้อมูลได้",
+        description: getErrorMessage(error),
       });
     }
   };

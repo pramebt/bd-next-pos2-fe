@@ -42,19 +42,13 @@ import {
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import Modal from "@/components/shared/Mymodal";
-
-interface UserProps {
-  id: number;
-  name: string;
-  username: string;
-  password: string;
-  level: 'admin' | 'user';
-}
+import type { User, ApiResponse } from "@/types/api";
+import { AxiosError } from "axios";
 
 const UserPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [users, setUsers] = useState<UserProps[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -68,9 +62,9 @@ const UserPage = () => {
 
   const fetchDataUsers = async () => {
     try {
-      const response = await axiosInstance.get('/api/user/get-users');
+      const response = await axiosInstance.get<ApiResponse<User[]>>('/api/user/get-users');
       setUsers(response.data.results || []);
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูลผู้ใช้");
     }
   }
@@ -130,8 +124,9 @@ const UserPage = () => {
       fetchDataUsers();
       clearForm();
       setIsModalOpen(false);
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "เกิดข้อผิดพลาดในการบันทึกข้อมูลผู้ใช้");
+    } catch (error) {
+      const e = error as AxiosError<{ message?: string }>;
+      toast.error(e.response?.data?.message || "เกิดข้อผิดพลาดในการบันทึกข้อมูลผู้ใช้");
     }
     finally {
       setIsLoading(false);
@@ -145,7 +140,7 @@ const UserPage = () => {
       toast.success("ลบข้อมูลผู้ใช้สำเร็จ");
       fetchDataUsers();
       setDeleteId(null);
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาดในการลบข้อมูลผู้ใช้");
     }
   }

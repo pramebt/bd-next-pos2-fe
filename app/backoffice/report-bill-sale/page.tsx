@@ -52,42 +52,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import type { BillSale, ApiResponse } from "@/types/api";
+import { getErrorMessage } from "@/lib/error-handler";
 
-interface BillSaleDetail {
-  id: number;
-  qty: number;
-  price: number;
-  moneyAdded: number;
-  foodSizeId?: number;
-  Food: {
-    id: number;
-    name: string;
-  };
-  Taste: {
-    id: number;
-    name: string;
-  } | null;
-  FoodSize: {
-    id: number;
-    name: string;
-    moneyAdded: number;
-  } | null;
-}
-
-interface BillSale {
-  id: number;
-  tableNo: number;
-  payDate: string;
-  payType: string;
-  amount: number;
-  inputMoney: number;
-  returnMoney: number;
-  User: {
-    id: number;
-    name: string;
-  };
-  BillSaleDetails: BillSaleDetail[];
-}
 
 const ReportBillSalePage = () => {
   const [billSales, setBillSales] = useState<BillSale[]>([]);
@@ -127,19 +94,19 @@ const ReportBillSalePage = () => {
         endDate: endDate
       };
 
-      const res = await axiosInstance.post('/api/bill-sale/list', payload);
+      const res = await axiosInstance.post<{ results: BillSale[] }>('/api/bill-sale/list', payload);
       const results = res.data.results || [];
       setBillSales(results);
 
-      const sum = results.reduce((total: number, bill: BillSale) => total + bill.amount, 0);
+      const sum = results.reduce((total, bill) => total + bill.amount, 0);
       setSumAmount(sum);
 
       if (results.length === 0) {
         toast.info("ไม่พบข้อมูลในช่วงวันที่ที่เลือก");
       }
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description: error.response?.data?.message || error.message || "ไม่สามารถโหลดข้อมูลได้",
+        description: getErrorMessage(error),
       });
     } finally {
       setIsLoading(false);
@@ -157,9 +124,9 @@ const ReportBillSalePage = () => {
       toast.success("ยกเลิกบิลสำเร็จ");
       setDeleteId(null);
       fetchData();
-    } catch (error: any) {
+    } catch (error) {
       toast.error("เกิดข้อผิดพลาด", {
-        description: error.response?.data?.message || error.message || "ไม่สามารถยกเลิกบิลได้",
+        description: getErrorMessage(error),
       });
     }
   };
@@ -320,7 +287,7 @@ const ReportBillSalePage = () => {
                             ฿{bill.amount.toLocaleString('th-TH')}
                           </p>
                           <p className="text-xs text-muted-foreground mt-1">
-                            {bill.BillSaleDetails.length} รายการ
+                            {bill.BillSaleDetails?.length ?? 0} รายการ
                           </p>
                         </div>
                       </div>
@@ -480,14 +447,14 @@ const ReportBillSalePage = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {selectedBill.BillSaleDetails.map((detail) => (
+                      {(selectedBill.BillSaleDetails || []).map((detail) => (
                         <TableRow key={detail.id}>
                           <TableCell className="font-medium">
                             {detail.Food?.name || '-'}
                           </TableCell>
                           <TableCell className="text-end">
                             <span className="font-semibold">
-                              ฿{(detail.price + detail.moneyAdded).toLocaleString('th-TH')}
+                              ฿{((detail.price ?? 0) + (detail.moneyAdded ?? 0)).toLocaleString('th-TH')}
                             </span>
                           </TableCell>
                           <TableCell>
@@ -495,7 +462,7 @@ const ReportBillSalePage = () => {
                           </TableCell>
                           <TableCell>
                             {detail.foodSizeId && detail.FoodSize
-                              ? `${detail.FoodSize.name} +฿${detail.moneyAdded.toLocaleString('th-TH')}`
+                              ? `${detail.FoodSize.name} +฿${(detail.moneyAdded ?? 0).toLocaleString('th-TH')}`
                               : '-'
                             }
                           </TableCell>

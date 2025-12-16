@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, ShoppingBag, User, Lock, Eye, EyeOff } from "lucide-react";
 import { signInSchema } from "@/lib/validations/auth";
+import type { SignInResponse, ApiError } from "@/types/api";
+import { AxiosError } from "axios";
 
 export default function SignInPage() {
   const [username, setUsername] = useState("");
@@ -24,7 +26,7 @@ export default function SignInPage() {
         password,
       };
 
-      const res = await axiosInstance.post(
+      const res = await axiosInstance.post<SignInResponse>(
         `/api/user/signIn`,
         payload
       );
@@ -32,21 +34,22 @@ export default function SignInPage() {
       if (res.data.token !== undefined) {
         localStorage.setItem(TOKEN_KEY, res.data.token);
         localStorage.setItem("next_name", res.data.name);
-        localStorage.setItem("next_user_id", res.data.id);
+        localStorage.setItem("next_user_id", res.data.id.toString());
         localStorage.setItem("next_user_level", res.data.level || "user");
         router.push("/backoffice");
       }
       toast.success("ลงชื่อเข้าใช้สำเร็จ", {
         description: "ลงชื่อเข้าใช้สำเร็จ",
       });
-    } catch (e: any) {
+    } catch (error) {
+      const e = error as AxiosError<{ message?: string }>;
       if (e.response?.status === 401) {
         toast.error("ตรวจ username", {
           description: "username ไม่ถูกต้อง",
         });
       } else {
         toast.error("error", {
-          description: e.message,
+          description: e.message || "เกิดข้อผิดพลาดในการเข้าสู่ระบบ",
         });
       }
     }
