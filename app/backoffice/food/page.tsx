@@ -4,7 +4,7 @@ import axiosInstance from '@/lib/axios';
 import { getImageUrl } from '@/lib/config';
 import React, { useEffect, useState } from 'react'
 import { toast } from 'sonner';
-import { Plus, Edit, Trash2, Loader2 } from "lucide-react";
+import { Plus, Edit, Trash2, Loader2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -60,6 +60,7 @@ import { AxiosError } from "axios";
 const FoodPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [search, setSearch] = useState("");
   const [foodTypeId, setFoodTypeId] = useState<number>(0);
   const [foodTypes, setFoodTypes] = useState<FoodType[]>([]);
   const [name, setName] = useState("");
@@ -213,6 +214,18 @@ const FoodPage = () => {
     return foodType === "food" ? "อาหาร" : foodType === "drink" ? "เครื่องดื่ม" : "";
   }
 
+  const filteredFoods = foods.filter((item) => {
+    const keyword = search.trim().toLowerCase();
+    if (!keyword) return true;
+    const typeName = item.FoodType?.name?.toLowerCase() || "";
+    return (
+      item.name.toLowerCase().includes(keyword) ||
+      (item.remark || "").toLowerCase().includes(keyword) ||
+      typeName.includes(keyword) ||
+      getFoodTypeName(item.foodType).toLowerCase().includes(keyword)
+    );
+  });
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -223,10 +236,21 @@ const FoodPage = () => {
             เพิ่ม แก้ไข หรือลบอาหาร
           </p>
         </div>
-        <Button onClick={openAddModal} className="gap-2">
-          <Plus className="h-4 w-4" />
-          เพิ่มรายการ
-        </Button>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative">
+            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="ค้นหาชื่ออาหาร ประเภท หรือหมายเหตุ"
+              className="pl-9 w-72"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <Button onClick={openAddModal} className="gap-2">
+            <Plus className="h-4 w-4" />
+            เพิ่มรายการ
+          </Button>
+        </div>
       </div>
 
       {/* Modal for Add/Edit */}
@@ -379,22 +403,22 @@ const FoodPage = () => {
         <CardHeader>
           <CardTitle>รายการอาหาร</CardTitle>
           <CardDescription>
-            รายการอาหารทั้งหมด {foods.length} รายการ
+            รายการอาหารทั้งหมด {filteredFoods.length} / {foods.length} รายการ
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {foods.length === 0 ? (
+          {filteredFoods.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
-              <p>ยังไม่มีข้อมูลอาหาร</p>
+              <p>ไม่พบรายการที่ตรงกับการค้นหา</p>
               <p className="text-sm mt-2">
-                คลิกปุ่ม "เพิ่มรายการ" เพื่อเพิ่มข้อมูล
+                ลองปรับคำค้นหรือเพิ่มรายการใหม่
               </p>
             </div>
           ) : (
             <>
               {/* Mobile Card View */}
               <div className="block md:hidden space-y-4">
-                {foods.map((item) => (
+                {filteredFoods.map((item) => (
                   <Card key={item.id} className="overflow-hidden">
                     <CardContent className="p-4">
                       <div className="flex gap-4">
@@ -502,7 +526,7 @@ const FoodPage = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {foods.map((item) => (
+                    {filteredFoods.map((item) => (
                       <TableRow key={item.id}>
                         <TableCell>
                           <div className="flex items-center justify-center">

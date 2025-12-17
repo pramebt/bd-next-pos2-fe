@@ -3,7 +3,7 @@
 import axiosInstance from '@/lib/axios';
 import React, { useEffect, useState } from 'react'
 import { toast } from 'sonner';
-import { Plus, Edit, Trash2, Loader2, User, Shield, UserCog } from "lucide-react";
+import { Plus, Edit, Trash2, Loader2, User, Shield, UserCog, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -48,6 +48,7 @@ import { AxiosError } from "axios";
 const UserPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [search, setSearch] = useState("");
   const [users, setUsers] = useState<User[]>([]);
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
@@ -162,6 +163,16 @@ const UserPage = () => {
     return level === "admin" ? <Shield className="h-4 w-4" /> : <User className="h-4 w-4" />;
   }
 
+  const filteredUsers = users.filter((item) => {
+    const keyword = search.trim().toLowerCase();
+    if (!keyword) return true;
+    return (
+      item.name.toLowerCase().includes(keyword) ||
+      item.username.toLowerCase().includes(keyword) ||
+      getLevelLabel(item.level).toLowerCase().includes(keyword)
+    );
+  });
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -176,6 +187,17 @@ const UserPage = () => {
           <Plus className="h-4 w-4" />
           เพิ่มผู้ใช้
         </Button>
+      </div>
+      <div className="flex flex-wrap gap-3 items-center justify-between">
+        <div className="relative">
+          <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="ค้นหาชื่อ, ชื่อผู้ใช้ หรือระดับผู้ใช้งาน"
+            className="pl-9 w-72"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
       </div>
 
       {/* Modal for Add/Edit */}
@@ -288,23 +310,21 @@ const UserPage = () => {
         <CardHeader>
           <CardTitle>รายการผู้ใช้</CardTitle>
           <CardDescription>
-            รายการผู้ใช้ทั้งหมด {users.length} รายการ
+            รายการผู้ใช้ทั้งหมด {filteredUsers.length} / {users.length} รายการ
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {users.length === 0 ? (
+          {filteredUsers.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <UserCog className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>ยังไม่มีข้อมูลผู้ใช้</p>
-              <p className="text-sm mt-2">
-                คลิกปุ่ม "เพิ่มผู้ใช้" เพื่อเพิ่มข้อมูล
-              </p>
+              <p>ไม่พบรายการที่ตรงกับการค้นหา</p>
+              <p className="text-sm mt-2">ลองปรับคำค้นหรือเพิ่มผู้ใช้ใหม่</p>
             </div>
           ) : (
             <>
               {/* Mobile Card View */}
               <div className="block md:hidden space-y-4">
-                {users.map((item) => (
+                {filteredUsers.map((item) => (
                   <Card key={item.id} className="overflow-hidden">
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between gap-2 mb-3">
@@ -387,7 +407,7 @@ const UserPage = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {users.map((item, index) => (
+                    {filteredUsers.map((item, index) => (
                       <TableRow key={item.id}>
                         <TableCell className="font-medium">{index + 1}</TableCell>
                         <TableCell className="font-medium">{item.name}</TableCell>

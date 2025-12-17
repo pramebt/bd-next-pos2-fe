@@ -15,7 +15,8 @@ import {
   X,
   Check,
   CreditCard,
-  Banknote
+  Banknote,
+  Search
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,6 +59,7 @@ import { getErrorMessage } from "@/lib/error-handler";
 const SaleTempPage = () => {
   const [table, setTable] = useState(1);
   const [foods, setFoods] = useState<Food[]>([]);
+  const [search, setSearch] = useState("");
   const [saleTemps, setSaleTemps] = useState<SaleTemp[]>([]);
   const [tastes, setTastes] = useState<Taste[]>([]);
   const [sizes, setSizes] = useState<FoodSize[]>([]);
@@ -419,6 +421,17 @@ const SaleTempPage = () => {
   const totalAmount = amount + amountAdded;
   const [showPrintDialog, setShowPrintDialog] = useState(false);
 
+  const filteredFoods = foods.filter((food) => {
+    const keyword = search.trim().toLowerCase();
+    if (!keyword) return true;
+    const typeName = food.FoodType?.name?.toLowerCase() || "";
+    return (
+      food.name.toLowerCase().includes(keyword) ||
+      typeName.includes(keyword) ||
+      (food.remark || "").toLowerCase().includes(keyword)
+    );
+  });
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -446,6 +459,16 @@ const SaleTempPage = () => {
       <Card>
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+          <div className="flex flex-wrap gap-3 items-center">
+            <div className="relative">
+              <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="ค้นหาชื่ออาหาร ประเภท หรือหมายเหตุ"
+                className="pl-9 w-64 sm:w-72"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
             <div className="flex flex-wrap gap-2 items-center">
               <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">กรอง:</span>
               <Button
@@ -470,6 +493,7 @@ const SaleTempPage = () => {
                 ทั้งหมด
               </Button>
             </div>
+          </div>
             <div className="flex flex-wrap gap-2 items-center">
               <Button
                 variant="destructive"
@@ -509,7 +533,7 @@ const SaleTempPage = () => {
                 รายการอาหาร
               </CardTitle>
               <CardDescription>
-                คลิกเพื่อเพิ่มรายการลงตะกร้า ({foods.length} รายการ)
+                คลิกเพื่อเพิ่มรายการลงตะกร้า ({filteredFoods.length} / {foods.length} รายการ)
               </CardDescription>
             </CardHeader>
             <CardContent className="flex-1">
@@ -519,9 +543,15 @@ const SaleTempPage = () => {
                   <p className="text-base">ไม่มีรายการอาหาร</p>
                   <p className="text-sm mt-1">กรุณาเพิ่มรายการอาหารในระบบก่อน</p>
                 </div>
+              ) : filteredFoods.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Search className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                  <p className="text-base">ไม่พบรายการที่ตรงกับการค้นหา</p>
+                  <p className="text-sm mt-1">ลองปรับคำค้นหรือเลือกกรองอื่น</p>
+                </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-                  {foods.map((food) => (
+                  {filteredFoods.map((food) => (
                     <Card
                       key={food.id}
                       className="cursor-pointer hover:shadow-md transition-all border-2 hover:border-primary/50 group overflow-hidden"
