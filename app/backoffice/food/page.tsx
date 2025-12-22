@@ -7,7 +7,6 @@ import { toast } from 'sonner';
 import { Plus, Edit, Trash2, Loader2, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -55,7 +54,6 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import Modal from "@/components/shared/Mymodal";
 import type { FoodType, Food, ApiResponse } from "@/types/api";
-import { AxiosError } from "axios";
 import { getErrorMessage } from "@/lib/error-handler";
 
 const FoodPage = () => {
@@ -581,7 +579,7 @@ const FoodPage = () => {
                           )}
                           <div className="mt-2">
                             <span className="font-semibold text-lg text-primary">
-                              {item.price.toLocaleString()}
+                              ฿{item.price.toLocaleString("th-TH")}
                             </span>
                             <span className="text-sm text-muted-foreground ml-1">บาท</span>
                           </div>
@@ -643,7 +641,7 @@ const FoodPage = () => {
                         </TableCell>
                         <TableCell className="text-right">
                           <span className="font-semibold text-lg text-primary">
-                            {item.price.toLocaleString()}
+                            ฿{item.price.toLocaleString("th-TH")}
                           </span>
                           <span className="text-sm text-muted-foreground ml-1">บาท</span>
                         </TableCell>
