@@ -560,7 +560,7 @@ const SaleTempPage = () => {
                       {food.img && (
                         <div className="w-full overflow-hidden bg-muted aspect-square">
                           <img
-                            src={getImageUrl(`uploads/${food.img}`)}
+                            src={getImageUrl(food.img)}
                             alt={food.name}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                           />
@@ -1068,7 +1068,7 @@ const SaleTempPage = () => {
            {billUrl && (
              <div className="w-full h-[400px] sm:h-[500px] lg:h-[600px] border-2 rounded-lg overflow-hidden bg-muted/30">
                <iframe
-                 src={getImageUrl(billUrl.startsWith('uploads/') ? billUrl : `uploads/${billUrl}`)}
+                 src={getImageUrl(billUrl)}
                  className="w-full h-full"
                  title="Print Document"
                />

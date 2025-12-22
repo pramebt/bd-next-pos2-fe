@@ -17,6 +17,7 @@ import {
   Building2,
   ChefHat,
   LogOut,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -90,6 +91,7 @@ export default function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
   const [userLevel, setUserLevel] = useState<string>("user");
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     // Get user level from localStorage
@@ -97,14 +99,25 @@ export default function Sidebar() {
     setUserLevel(level);
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem("user");
-    localStorage.removeItem("next_name");
-    localStorage.removeItem("next_user_id");
-    localStorage.removeItem("next_user_level");
-    router.push("/signin");
-    toast.success("ออกจากระบบสำเร็จ");
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      // Simulate logout delay for better UX
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem("user");
+      localStorage.removeItem("next_name");
+      localStorage.removeItem("next_user_id");
+      localStorage.removeItem("next_user_level");
+      
+      toast.success("ออกจากระบบสำเร็จ");
+      router.push("/signin");
+    } catch (error) {
+      toast.error("เกิดข้อผิดพลาดในการออกจากระบบ");
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   // Filter menu items based on user level
@@ -210,10 +223,20 @@ export default function Sidebar() {
       <div className="p-4 border-t border-border">
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-all duration-200"
+          disabled={isLoggingOut}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <LogOut className="w-5 h-5" />
-          <span>ออกจากระบบ</span>
+          {isLoggingOut ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span>กำลังออกจากระบบ...</span>
+            </>
+          ) : (
+            <>
+              <LogOut className="w-5 h-5" />
+              <span>ออกจากระบบ</span>
+            </>
+          )}
         </button>
       </div>
     </div>

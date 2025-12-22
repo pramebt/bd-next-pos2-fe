@@ -107,16 +107,14 @@ const TastePage = () => {
         if (!deleteId) return;
         try {
             await axiosInstance.delete('/api/taste/delete', { data: { id: deleteId } });
-        
-        toast.success("ลบข้อมูลรสชาติสำเร็จ");
-        fetchDataTaste();
-        setDeleteId(null);
-    } catch (error) {
-        toast.error("เกิดข้อผิดพลาดในการลบข้อมูลรสชาติ", {
-            description: getErrorMessage(error),
-        });
-    }
-
+            toast.success("ลบข้อมูลรสชาติสำเร็จ");
+            fetchDataTaste();
+            setDeleteId(null);
+        } catch (error) {
+            toast.error("เกิดข้อผิดพลาดในการลบข้อมูลรสชาติ", {
+                description: getErrorMessage(error),
+            });
+        }
     }
 
     const editTaste = (taste: Taste) => {

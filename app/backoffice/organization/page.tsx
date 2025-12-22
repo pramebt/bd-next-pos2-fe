@@ -48,7 +48,8 @@ const OrganizationPage = () => {
     try {
       const response = await axiosInstance.post(
         '/api/organization/upload-file',
-        formData
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
       );
       setLogo(response.data.fileName);
       return response.data.fileName;
@@ -170,7 +171,7 @@ const OrganizationPage = () => {
                 <div className="space-y-2 mb-3">
                   <div className="flex justify-center">
                     <img
-                      src={getImageUrl(`uploads/${logo}`)}
+                      src={getImageUrl(logo)}
                       alt="Logo"
                       className="rounded-lg border-2 border-gray-200 object-contain bg-gray-50 p-2 max-h-32"
                     />

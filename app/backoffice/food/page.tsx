@@ -56,6 +56,7 @@ import { Badge } from "@/components/ui/badge";
 import Modal from "@/components/shared/Mymodal";
 import type { FoodType, Food, ApiResponse } from "@/types/api";
 import { AxiosError } from "axios";
+import { getErrorMessage } from "@/lib/error-handler";
 
 const FoodPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -110,7 +111,11 @@ const FoodPage = () => {
     formData.append("myFile", myFile);
 
     try {
-      const response = await axiosInstance.post<{ fileName: string }>('/api/food/upload-image', formData);
+      const response = await axiosInstance.post<{ fileName: string }>(
+        '/api/food/upload-image',
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
       
       return response.data.fileName;
 
@@ -179,9 +184,10 @@ const FoodPage = () => {
       clearForm();
       setIsModalOpen(false);
     } catch (error) {
-      toast.error("เกิดข้อผิดพลาดในการบันทึกข้อมูลอาหาร");
-    }
-    finally {
+      toast.error("เกิดข้อผิดพลาดในการบันทึกข้อมูลอาหาร", {
+        description: getErrorMessage(error),
+      });
+    } finally {
       setIsLoading(false);
     }
   }
@@ -194,7 +200,9 @@ const FoodPage = () => {
       fetchDataFood();
       setDeleteId(null);
     } catch (error) {
-      toast.error("เกิดข้อผิดพลาดในการลบข้อมูลอาหาร");
+      toast.error("เกิดข้อผิดพลาดในการลบข้อมูลอาหาร", {
+        description: getErrorMessage(error),
+      });
     }
   }
   
@@ -293,7 +301,7 @@ const FoodPage = () => {
               <div className="mb-3 flex justify-center">
                 <img
                   className="rounded-lg border-2 border-gray-200 object-contain bg-gray-50 p-2 max-h-32"
-                  src={getImageUrl(`uploads/${img}`)}
+                  src={getImageUrl(img)}
                   alt={name}
                 />
               </div>
@@ -424,11 +432,11 @@ const FoodPage = () => {
                       <div className="flex gap-4">
                         <div className="shrink-0">
                           <img
-                            src={getImageUrl(`uploads/${item.img}`)}
+                            src={getImageUrl(item.img)}
                             alt={item.name}
                             className="w-24 h-24 object-contain rounded-lg border-2 border-gray-200 cursor-pointer hover:border-primary hover:shadow-md transition-all bg-gray-50 p-1"
                             onClick={() => setSelectedImage({ 
-                              src: getImageUrl(`uploads/${item.img}`), 
+                              src: getImageUrl(item.img), 
                               alt: item.name 
                             })}
                           />
@@ -531,11 +539,11 @@ const FoodPage = () => {
                         <TableCell>
                           <div className="flex items-center justify-center">
                             <img
-                              src={getImageUrl(`uploads/${item.img}`)}
+                              src={getImageUrl(item.img)}
                               alt={item.name}
                               className="w-20 h-20 object-contain rounded-lg  cursor-pointer hover:border-primary hover:shadow-md transition-all bg-gray-50 p-1"
                               onClick={() => setSelectedImage({ 
-                                src: getImageUrl(`uploads/${item.img}`), 
+                                src: getImageUrl(item.img), 
                                 alt: item.name 
                               })}
                             />

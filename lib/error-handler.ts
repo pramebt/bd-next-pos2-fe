@@ -1,37 +1,19 @@
 import { AxiosError } from "axios";
 
-/**
- * Helper function to safely cast error to AxiosError
- * @param error - The error caught in catch block
- * @returns AxiosError with typed response data
- */
-export function getAxiosError<T = { message?: string }>(
-  error: unknown
-): AxiosError<T> {
-  return error as AxiosError<T>;
-}
+type ErrorResponse = { message?: string };
 
 /**
- * Get error message from AxiosError
- * @param error - The error caught in catch block
- * @returns Error message string
+ * ดึงข้อความ error จาก AxiosError
  */
 export function getErrorMessage(error: unknown): string {
-  const e = getAxiosError<{ message?: string }>(error);
-  return (
-    e.response?.data?.message ||
-    e.message ||
-    "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ"
-  );
+  const e = error as AxiosError<ErrorResponse>;
+  return e.response?.data?.message || e.message || "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ";
 }
 
 /**
- * Check if error is 401 Unauthorized
- * @param error - The error caught in catch block
- * @returns true if status is 401
+ * ตรวจสอบว่า error เป็น 401 Unauthorized หรือไม่
  */
 export function isUnauthorizedError(error: unknown): boolean {
-  const e = getAxiosError(error);
+  const e = error as AxiosError;
   return e.response?.status === 401;
 }
-

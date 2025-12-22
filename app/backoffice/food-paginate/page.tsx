@@ -199,11 +199,11 @@ const FoodPaginatePage = () => {
                       <div className="flex gap-4">
                         <div className="shrink-0">
                           <img
-                            src={getImageUrl(`uploads/${item.img}`)}
+                        src={getImageUrl(item.img)}
                             alt={item.name}
                             className="w-24 h-24 object-contain rounded-lg border-2 border-gray-200 cursor-pointer hover:border-primary hover:shadow-md transition-all bg-gray-50 p-1"
                             onClick={() => setSelectedImage({ 
-                              src: getImageUrl(`uploads/${item.img}`), 
+                          src: getImageUrl(item.img), 
                               alt: item.name 
                             })}
                           />
@@ -218,7 +218,7 @@ const FoodPaginatePage = () => {
                                 className="h-8 w-8"
                                 title="ดูรูปภาพ"
                                 onClick={() => setSelectedImage({ 
-                                  src: getImageUrl(`uploads/${item.img}`), 
+                              src: getImageUrl(item.img), 
                                   alt: item.name 
                                 })}
                               >
@@ -309,11 +309,11 @@ const FoodPaginatePage = () => {
                         <TableCell>
                           <div className="flex items-center justify-center">
                             <img
-                              src={getImageUrl(`uploads/${item.img}`)}
+                              src={getImageUrl(item.img)}
                               alt={item.name}
                               className="w-20 h-20 object-contain rounded-lg cursor-pointer hover:border-primary hover:shadow-md transition-all bg-gray-50 p-1 border-2 border-gray-200"
                               onClick={() => setSelectedImage({ 
-                                src: getImageUrl(`uploads/${item.img}`), 
+                                src: getImageUrl(item.img), 
                                 alt: item.name 
                               })}
                             />
@@ -350,7 +350,7 @@ const FoodPaginatePage = () => {
                               variant="outline"
                               size="icon"
                               onClick={() => setSelectedImage({ 
-                                src: getImageUrl(`uploads/${item.img}`), 
+                                src: getImageUrl(item.img), 
                                 alt: item.name 
                               })}
                               className="h-9 w-9 hover:bg-primary hover:text-primary-foreground transition-colors"

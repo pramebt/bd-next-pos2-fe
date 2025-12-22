@@ -72,7 +72,16 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto px-4">
+    <div className="w-full max-w-md mx-auto px-4 relative">
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center rounded-3xl">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <p className="text-sm font-medium text-foreground">กำลังเข้าสู่ระบบ...</p>
+          </div>
+        </div>
+      )}
       <div className="backdrop-blur-2xl bg-card/90 border border-border rounded-3xl shadow-2xl shadow-black/10 dark:shadow-black/50 p-10 space-y-8">
         {/* Header */}
         <div className="text-center space-y-4">
