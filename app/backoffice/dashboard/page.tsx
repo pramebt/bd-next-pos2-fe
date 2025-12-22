@@ -41,6 +41,7 @@ import {
   Tooltip,
   Legend,
   Filler,
+  TooltipItem,
 } from "chart.js";
 import { Line, Bar } from "react-chartjs-2";
 import { getErrorMessage } from "@/lib/error-handler";
@@ -203,8 +204,12 @@ const DashboardPage = () => {
       },
       tooltip: {
         callbacks: {
-          label: function (context) {
-            return `ยอดขาย: ฿${context.parsed.y.toLocaleString("th-TH")}`;
+          label: function (context: TooltipItem<'bar'>) {
+            const value = context.parsed.y;
+            if (value === null || value === undefined) {
+              return `ยอดขาย: ฿0`;
+            }
+            return `ยอดขาย: ฿${value.toLocaleString("th-TH")}`;
           },
         },
       },
@@ -213,7 +218,7 @@ const DashboardPage = () => {
       y: {
         beginAtZero: true,
         ticks: {
-          callback: function (value) {
+          callback: function (value: string | number) {
             if (typeof value === 'number') {
               return "฿" + value.toLocaleString("th-TH");
             }

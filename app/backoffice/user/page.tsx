@@ -3,7 +3,7 @@
 import axiosInstance from '@/lib/axios';
 import React, { useEffect, useState } from 'react'
 import { toast } from 'sonner';
-import { Plus, Edit, Trash2, Loader2, User, Shield, UserCog, Search } from "lucide-react";
+import { Plus, Edit, Trash2, Loader2, User as UserIcon, Shield, UserCog, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -146,7 +146,7 @@ const UserPage = () => {
     }
   }
   
-  const editUser = (user: UserProps) => {
+  const editUser = (user: User) => {
     setId(user.id);
     setName(user.name);
     setUsername(user.username);
@@ -160,7 +160,7 @@ const UserPage = () => {
   }
 
   const getLevelIcon = (level: string) => {
-    return level === "admin" ? <Shield className="h-4 w-4" /> : <User className="h-4 w-4" />;
+    return level === "admin" ? <Shield className="h-4 w-4" /> : <UserIcon className="h-4 w-4" />;
   }
 
   const filteredUsers = users.filter((item) => {
@@ -272,7 +272,7 @@ const UserPage = () => {
                 </SelectItem>
                 <SelectItem value="user">
                   <div className="flex items-center gap-2">
-                    <User className="h-4 w-4" />
+                    <UserIcon className="h-4 w-4" />
                     ผู้ใช้งาน
                   </div>
                 </SelectItem>
