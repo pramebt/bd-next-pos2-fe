@@ -2,9 +2,9 @@
 "use client";
 import axiosInstance from '@/lib/axios';
 import { getImageUrl } from '@/lib/config';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { toast } from 'sonner';
-import { Plus, Edit, Trash2, Loader2, Search } from "lucide-react";
+import { Plus, Edit, Trash2, Loader2, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -74,11 +74,27 @@ const FoodPage = () => {
   const [FoodType, setFoodType] = useState("food");
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [selectedImage, setSelectedImage] = useState<{ src: string; alt: string } | null>(null);
+  const [totalPages, setTotalPages] = useState<number>(0);
+  const [totalItems, setTotalItems] = useState<number>(0);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [limit, setLimit] = useState<number>(10);
+  const [isLoadingData, setIsLoadingData] = useState<boolean>(false);
+  const isFirstLoad = useRef(true);
   
   useEffect(() => {
     fetchDataFoodType();
-    fetchDataFood();
+    if (isFirstLoad.current) {
+      isFirstLoad.current = false;
+      fetchDataFood();
+    }
   }, []);
+
+  useEffect(() => {
+    if (!isFirstLoad.current) {
+      fetchDataFood();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, limit]);
 
   const fetchDataFoodType = async () => {
     try {
@@ -95,10 +111,20 @@ const FoodPage = () => {
 
   const fetchDataFood = async () => {
     try {
-      const response = await axiosInstance.get<ApiResponse<Food[]>>('/api/food/list');
+      setIsLoadingData(true);
+      const response = await axiosInstance.post<ApiResponse<Food[]>>('/api/food/paginate', {
+        page: currentPage,
+        limit: limit,
+      });
       setFoods(response.data.result || []);
+      setTotalPages(response.data.totalPages || 0);
+      setTotalItems(response.data.totalItems || 0);
     } catch (error) {
-      toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูลอาหาร");
+      toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูลอาหาร", {
+        description: getErrorMessage(error),
+      });
+    } finally {
+      setIsLoadingData(false);
     }
   }
   
@@ -197,14 +223,31 @@ const FoodPage = () => {
     try {
       await axiosInstance.delete(`/api/food/delete/${deleteId}`);
       toast.success("ลบข้อมูลอาหารสำเร็จ");
-      fetchDataFood();
       setDeleteId(null);
+      
+      // If current page becomes empty after deletion, go to previous page
+      if (foods.length === 1 && currentPage > 1) {
+        setCurrentPage(currentPage - 1);
+      } else {
+        fetchDataFood();
+      }
     } catch (error) {
       toast.error("เกิดข้อผิดพลาดในการลบข้อมูลอาหาร", {
         description: getErrorMessage(error),
       });
     }
   }
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
+
+  const handleLimitChange = (newLimit: number) => {
+    setLimit(newLimit);
+    setCurrentPage(1); // Reset to first page when changing limit
+  };
   
   const editFood = (food: Food) => {
     setId(food.id);
@@ -234,14 +277,18 @@ const FoodPage = () => {
     );
   });
 
+  // Calculate pagination info
+  const startItem = totalItems === 0 ? 0 : (currentPage - 1) * limit + 1;
+  const endItem = Math.min(currentPage * limit, totalItems);
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-foreground">จัดการอาหาร</h1>
           <p className="text-muted-foreground mt-1">
-            เพิ่ม แก้ไข หรือลบอาหาร
+            เพิ่ม แก้ไข หรือลบอาหาร ({totalItems} รายการ)
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -253,6 +300,24 @@ const FoodPage = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
+          </div>
+          <div className="flex items-center gap-2">
+            <Label htmlFor="limit" className="text-sm whitespace-nowrap">แสดงต่อหน้า:</Label>
+            <Select
+              value={limit.toString()}
+              onValueChange={(value) => handleLimitChange(Number(value))}
+              disabled={isLoadingData}
+            >
+              <SelectTrigger id="limit" className="w-[100px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="5">5</SelectItem>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="20">20</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <Button onClick={openAddModal} className="gap-2">
             <Plus className="h-4 w-4" />
@@ -411,11 +476,19 @@ const FoodPage = () => {
         <CardHeader>
           <CardTitle>รายการอาหาร</CardTitle>
           <CardDescription>
-            รายการอาหารทั้งหมด {filteredFoods.length} / {foods.length} รายการ
+            {search ? (
+              <>แสดง {filteredFoods.length} รายการที่ตรงกับการค้นหา</>
+            ) : (
+              <>แสดง {startItem}-{endItem} จาก {totalItems} รายการ</>
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {filteredFoods.length === 0 ? (
+          {isLoadingData ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : filteredFoods.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <p>ไม่พบรายการที่ตรงกับการค้นหา</p>
               <p className="text-sm mt-2">
@@ -630,6 +703,86 @@ const FoodPage = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Pagination Controls */}
+      {!search && totalPages > 0 && (
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-sm text-muted-foreground">
+                แสดง {startItem}-{endItem} จาก {totalItems} รายการ
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handlePageChange(1)}
+                  disabled={currentPage === 1 || isLoadingData}
+                  title="หน้าแรก"
+                >
+                  <ChevronsLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1 || isLoadingData}
+                  title="หน้าก่อน"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum: number;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+                    
+                    return (
+                      <Button
+                        key={pageNum}
+                        variant={currentPage === pageNum ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handlePageChange(pageNum)}
+                        disabled={isLoadingData}
+                        className="min-w-[40px]"
+                      >
+                        {pageNum}
+                      </Button>
+                    );
+                  })}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages || isLoadingData}
+                  title="หน้าถัดไป"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handlePageChange(totalPages)}
+                  disabled={currentPage === totalPages || isLoadingData}
+                  title="หน้าสุดท้าย"
+                >
+                  <ChevronsRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Image Preview Dialog */}
       <Dialog open={!!selectedImage} onOpenChange={(open) => !open && setSelectedImage(null)}>

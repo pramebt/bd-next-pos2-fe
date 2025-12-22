@@ -16,7 +16,8 @@ import {
   Check,
   CreditCard,
   Banknote,
-  Search
+  Search,
+  Loader2
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -76,6 +77,9 @@ const SaleTempPage = () => {
   const [deleteSaleTempId, setDeleteSaleTempId] = useState<number | null>(null);
   const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false);
   const [showEndSaleDialog, setShowEndSaleDialog] = useState(false);
+  const [isLoadingBillBeforePay, setIsLoadingBillBeforePay] = useState(false);
+  const [isLoadingBillAfterPay, setIsLoadingBillAfterPay] = useState(false);
+  const [isEndingSale, setIsEndingSale] = useState(false);
  
 
   useEffect(() => {
@@ -356,6 +360,7 @@ const SaleTempPage = () => {
   };
 
   const printBillBeforePay = async () => {
+    setIsLoadingBillBeforePay(true);
     try {
       const payload = {
         tableNo: table,
@@ -368,8 +373,10 @@ const SaleTempPage = () => {
       setTimeout(() => {
         setBillUrl(res.data.fileName);
         setShowPrintDialog(true);
+        setIsLoadingBillBeforePay(false);
       }, 500);
     } catch (error) {
+      setIsLoadingBillBeforePay(false);
       toast.error("เกิดข้อผิดพลาด", {
         description: getErrorMessage(error),
       });
@@ -377,6 +384,7 @@ const SaleTempPage = () => {
   };
   
   const endSale = async () => {
+    setIsEndingSale(true);
     try {
         const payload = {
           tableNo: table,
@@ -392,8 +400,10 @@ const SaleTempPage = () => {
       toast.success("จบการขายสำเร็จ");
       setShowEndSaleDialog(false);
       setInputMoney(0);
-        printBillAfterPay();
+      setIsEndingSale(false);
+        await printBillAfterPay();
     } catch (error) {
+      setIsEndingSale(false);
       toast.error("เกิดข้อผิดพลาด", {
         description: getErrorMessage(error),
       });
@@ -401,6 +411,7 @@ const SaleTempPage = () => {
   };
 
   const printBillAfterPay = async () => {
+    setIsLoadingBillAfterPay(true);
     try {
       const payload = {
         tableNo: table,
@@ -411,8 +422,10 @@ const SaleTempPage = () => {
       setTimeout(() => {
         setBillUrl(res.data.fileName);
         setShowPrintDialog(true);
+        setIsLoadingBillAfterPay(false);
       }, 300);
     } catch (error) {
+      setIsLoadingBillAfterPay(false);
       toast.error("เกิดข้อผิดพลาด", {
         description: getErrorMessage(error),
       });
@@ -433,7 +446,28 @@ const SaleTempPage = () => {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {/* Full Screen Loading Overlay */}
+      {(isLoadingBillBeforePay || isLoadingBillAfterPay || isEndingSale) && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4 bg-card p-8 rounded-2xl shadow-2xl border border-border">
+            <Loader2 className="w-12 h-12 animate-spin text-primary" />
+            <div className="text-center space-y-2">
+              <p className="text-lg font-semibold text-foreground">
+                {isEndingSale 
+                  ? "กำลังบันทึกข้อมูลการขาย..." 
+                  : isLoadingBillBeforePay 
+                  ? "กำลังสร้างใบแจ้งรายการ..." 
+                  : "กำลังสร้างใบเสร็จรับเงิน..."}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                กรุณารอสักครู่
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -511,6 +545,7 @@ const SaleTempPage = () => {
                   onClick={printBillBeforePay}
                   size="sm"
                   className="gap-2"
+                  disabled={isLoadingBillBeforePay || isLoadingBillAfterPay || isEndingSale}
                 >
                   <Printer className="h-4 w-4" />
                   <span className="hidden sm:inline">พิมพ์ใบแจ้งรายการ</span>
@@ -1046,7 +1081,7 @@ const SaleTempPage = () => {
                  size="lg"
                  className="h-10 sm:h-11 text-xs sm:text-sm font-semibold"
                  onClick={endSale}
-                 disabled={inputMoney < totalAmount}
+                 disabled={inputMoney < totalAmount || isEndingSale || isLoadingBillAfterPay}
                >
                  <Check className="h-4 w-4 mr-2" />
                  จบการขาย
@@ -1057,7 +1092,17 @@ const SaleTempPage = () => {
        </Dialog>
 
        {/* Print Dialog */}
-       <Dialog open={showPrintDialog} onOpenChange={setShowPrintDialog}>
+       <Dialog 
+         open={showPrintDialog} 
+         onOpenChange={(open) => {
+           if (!open && !isLoadingBillBeforePay && !isLoadingBillAfterPay) {
+             setShowPrintDialog(false);
+             setBillUrl("");
+             setIsLoadingBillBeforePay(false);
+             setIsLoadingBillAfterPay(false);
+           }
+         }}
+       >
          <DialogContent className="max-w-5xl max-h-[90vh] w-[95vw] sm:w-full">
            <DialogHeader>
              <DialogTitle className="text-lg sm:text-xl">พิมพ์เอกสาร</DialogTitle>
@@ -1065,7 +1110,7 @@ const SaleTempPage = () => {
                เอกสารใบเสร็จสำหรับการพิมพ์
              </DialogDescription>
            </DialogHeader>
-           {billUrl && (
+           {billUrl ? (
              <div className="w-full h-[400px] sm:h-[500px] lg:h-[600px] border-2 rounded-lg overflow-hidden bg-muted/30">
                <iframe
                  src={getImageUrl(billUrl)}
@@ -1073,7 +1118,7 @@ const SaleTempPage = () => {
                  title="Print Document"
                />
              </div>
-           )}
+           ) : null}
          </DialogContent>
        </Dialog>
 

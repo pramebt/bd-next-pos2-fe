@@ -38,11 +38,6 @@ const menuItems = [
     icon: Utensils,
   },
   {
-    title: "อาหารแบบ Pagination",
-    href: "/backoffice/food-paginate",
-    icon: Package,
-  },
-  {
     title: "ประเภทอาหาร",
     href: "/backoffice/food-type",
     icon: ChefHat,
