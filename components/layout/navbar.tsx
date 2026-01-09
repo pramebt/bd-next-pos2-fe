@@ -12,7 +12,6 @@ export default function Navbar() {
 
   useEffect(() => {
     const name = localStorage.getItem("next_name");
-    console.log(name);
     setName(name ?? "");
   }, []);
 

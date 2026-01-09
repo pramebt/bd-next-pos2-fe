@@ -36,19 +36,25 @@ export default function SignInPage() {
         localStorage.setItem("next_name", res.data.name);
         localStorage.setItem("next_user_id", res.data.id.toString());
         localStorage.setItem("next_user_level", res.data.level || "user");
-        router.push("/backoffice");
+        
+        // Show success toast before navigation
+        toast.success("ลงชื่อเข้าใช้สำเร็จ", {
+          description: "กำลังเข้าสู่ระบบ...",
+        });
+        
+        // Small delay to show toast, then navigate
+        setTimeout(() => {
+          router.push("/backoffice");
+        }, 300);
       }
-      toast.success("ลงชื่อเข้าใช้สำเร็จ", {
-        description: "ลงชื่อเข้าใช้สำเร็จ",
-      });
     } catch (error) {
       const e = error as AxiosError<{ message?: string }>;
       if (e.response?.status === 401) {
         toast.error("ตรวจ username", {
-          description: "username ไม่ถูกต้อง",
+          description: "username หรือ password ไม่ถูกต้อง",
         });
       } else {
-        toast.error("error", {
+        toast.error("เกิดข้อผิดพลาด", {
           description: e.message || "เกิดข้อผิดพลาดในการเข้าสู่ระบบ",
         });
       }

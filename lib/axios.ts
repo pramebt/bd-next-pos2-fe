@@ -4,12 +4,17 @@ import { API_URL, TOKEN_KEY } from './config';
 const axiosInstance = axios.create({
   baseURL: API_URL,
   headers: { 'Content-Type': 'application/json' },
+  timeout: 10000, // 10 seconds timeout
 });
 
 axiosInstance.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem(TOKEN_KEY);
     if (token) config.headers.Authorization = `Bearer ${token}`;
+  }
+  // Don't set Content-Type for FormData, let axios set it automatically with boundary
+  if (config.data instanceof FormData) {
+    delete config.headers['Content-Type'];
   }
   return config;
 });

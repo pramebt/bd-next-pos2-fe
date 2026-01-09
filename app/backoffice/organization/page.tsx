@@ -48,8 +48,7 @@ const OrganizationPage = () => {
     try {
       const response = await axiosInstance.post(
         '/api/organization/upload-file',
-        formData,
-        { headers: { 'Content-Type': 'multipart/form-data' } }
+        formData
       );
       setLogo(response.data.fileName);
       return response.data.fileName;
@@ -108,7 +107,6 @@ const OrganizationPage = () => {
         try {
           finalLogo = await uploadFile();
         } catch (error) {
-          // Error already handled in uploadFile
           setIsLoading(false);
           return;
         }

@@ -139,8 +139,7 @@ export default function Sidebar() {
     if (pathname === href) {
       return true;
     }
-    // Check if pathname starts with href + "/" to avoid partial matches
-    // Example: /backoffice/food should not match /backoffice/food-type
+
     return pathname.startsWith(href + "/");
   };
 
