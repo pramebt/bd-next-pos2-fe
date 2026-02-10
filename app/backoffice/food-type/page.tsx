@@ -31,7 +31,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import Modal from "@/components/shared/Mymodal";
@@ -104,6 +103,9 @@ const FoodTypePage = () => {
       const count = foods.filter((food) => food.foodTypeId === foodTypeId).length;
       return count;
     } catch (error) {
+      toast.error("เกิดข้อผิดพลาดในการตรวจสอบจำนวนอาหาร", {
+        description: getErrorMessage(error),
+      });
       return 0;
     }
   };
@@ -352,7 +354,7 @@ const FoodTypePage = () => {
             <div className="text-center py-12 text-muted-foreground">
               <p>ยังไม่มีข้อมูลประเภทอาหาร</p>
               <p className="text-sm mt-2">
-                คลิกปุ่ม "เพิ่มประเภทอาหาร" เพื่อเพิ่มข้อมูล
+                คลิกปุ่ม &quot;เพิ่มประเภทอาหาร&quot; เพื่อเพิ่มข้อมูล
               </p>
             </div>
           ) : (
@@ -374,7 +376,7 @@ const FoodTypePage = () => {
                 <>
                   {/* Mobile Card View */}
                   <div className="block md:hidden space-y-4">
-                    {filteredFoodTypes.map((foodType, index) => {
+                    {filteredFoodTypes.map((foodType) => {
                       const originalIndex = foodTypes.findIndex((ft) => ft.id === foodType.id);
                       return (
                   <Card key={foodType.id} className="overflow-hidden">
@@ -486,7 +488,7 @@ const FoodTypePage = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>ยืนยันการลบ</AlertDialogTitle>
             <AlertDialogDescription>
-              คุณต้องการลบประเภทอาหาร "{deleteFoodTypeName}"
+              คุณต้องการลบประเภทอาหาร &quot;{deleteFoodTypeName}&quot;
               หรือไม่?
               <br />
               {foodCount > 0 && (

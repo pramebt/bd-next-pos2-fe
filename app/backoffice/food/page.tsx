@@ -1,8 +1,9 @@
 // Food Management Page
 "use client";
+import Image from 'next/image';
 import axiosInstance from '@/lib/axios';
 import { getImageUrl } from '@/lib/config';
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useCallback, useEffect, useState, useRef } from 'react'
 import { toast } from 'sonner';
 import { Plus, Edit, Trash2, Loader2, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -78,23 +79,9 @@ const FoodPage = () => {
   const [limit, setLimit] = useState<number>(10);
   const [isLoadingData, setIsLoadingData] = useState<boolean>(false);
   const isFirstLoad = useRef(true);
-  
-  useEffect(() => {
-    fetchDataFoodType();
-    if (isFirstLoad.current) {
-      isFirstLoad.current = false;
-      fetchDataFood();
-    }
-  }, []);
+  const hasInitialMountRun = useRef(false);
 
-  useEffect(() => {
-    if (!isFirstLoad.current) {
-      fetchDataFood();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, limit]);
-
-  const fetchDataFoodType = async () => {
+  const fetchDataFoodType = useCallback(async () => {
     try {
       const response = await axiosInstance.get<ApiResponse<FoodType[]>>('/api/food-type/list');
       
@@ -102,12 +89,13 @@ const FoodPage = () => {
         setFoodTypes(response.data.result);
         setFoodTypeId(response.data.result[0].id);
       }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูลประเภทอาหาร");
     }
-  }
+  }, []);
 
-  const fetchDataFood = async () => {
+  const fetchDataFood = useCallback(async () => {
     try {
       setIsLoadingData(true);
       const response = await axiosInstance.post<ApiResponse<Food[]>>('/api/food/paginate', {
@@ -124,7 +112,22 @@ const FoodPage = () => {
     } finally {
       setIsLoadingData(false);
     }
-  }
+  }, [currentPage, limit]);
+
+  useEffect(() => {
+    if (!hasInitialMountRun.current) {
+      hasInitialMountRun.current = true;
+      fetchDataFoodType();
+      isFirstLoad.current = false;
+      fetchDataFood();
+    }
+  }, [fetchDataFood, fetchDataFoodType]);
+
+  useEffect(() => {
+    if (!isFirstLoad.current) {
+      fetchDataFood();
+    }
+  }, [currentPage, limit, fetchDataFood]);
   
   const handleUploadImage = async () => {
     if (!myFile) {
@@ -143,6 +146,7 @@ const FoodPage = () => {
       
       return response.data.fileName;
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       toast.error("เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ");
       return null;
@@ -362,10 +366,13 @@ const FoodPage = () => {
             </label>
             {img !== "" && (
               <div className="mb-3 flex justify-center">
-                <img
+                <Image
                   className="rounded-lg border-2 border-gray-200 object-contain bg-gray-50 p-2 max-h-32"
                   src={getImageUrl(img)}
                   alt={name}
+                  width={128}
+                  height={128}
+                  unoptimized
                 />
               </div>
             )}
@@ -502,14 +509,17 @@ const FoodPage = () => {
                     <CardContent className="p-4">
                       <div className="flex gap-4">
                         <div className="shrink-0">
-                          <img
+                          <Image
                             src={getImageUrl(item.img)}
                             alt={item.name}
+                            width={96}
+                            height={96}
                             className="w-24 h-24 object-contain rounded-lg border-2 border-gray-200 cursor-pointer hover:border-primary hover:shadow-md transition-all bg-gray-50 p-1"
                             onClick={() => setSelectedImage({ 
                               src: getImageUrl(item.img), 
                               alt: item.name 
                             })}
+                            unoptimized
                           />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -541,7 +551,7 @@ const FoodPage = () => {
                                   <AlertDialogHeader>
                                     <AlertDialogTitle>ยืนยันการลบ</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                      คุณต้องการลบอาหาร "{item.name}" หรือไม่?
+                                      คุณต้องการลบอาหาร &quot;{item.name}&quot; หรือไม่?
                                       <br />
                                       การกระทำนี้ไม่สามารถยกเลิกได้
                                     </AlertDialogDescription>
@@ -609,14 +619,17 @@ const FoodPage = () => {
                       <TableRow key={item.id}>
                         <TableCell>
                           <div className="flex items-center justify-center">
-                            <img
+                            <Image
                               src={getImageUrl(item.img)}
                               alt={item.name}
+                              width={80}
+                              height={80}
                               className="w-20 h-20 object-contain rounded-lg  cursor-pointer hover:border-primary hover:shadow-md transition-all bg-gray-50 p-1"
                               onClick={() => setSelectedImage({ 
                                 src: getImageUrl(item.img), 
                                 alt: item.name 
                               })}
+                              unoptimized
                             />
                           </div>
                         </TableCell>
@@ -672,7 +685,7 @@ const FoodPage = () => {
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>ยืนยันการลบ</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    คุณต้องการลบอาหาร "{item.name}" หรือไม่?
+                                    คุณต้องการลบอาหาร &quot;{item.name}&quot; หรือไม่?
                                     <br />
                                     การกระทำนี้ไม่สามารถยกเลิกได้
                                   </AlertDialogDescription>
@@ -791,11 +804,14 @@ const FoodPage = () => {
           {selectedImage && (
             <div className="flex flex-col items-center justify-center p-6">
               <p className="text-lg font-semibold mb-4">{selectedImage.alt}</p>
-              <div className="bg-gray-50 rounded-lg p-4 border-2 border-gray-200">
-                <img
+              <div className="bg-gray-50 rounded-lg p-4 border-2 border-gray-200 relative w-full min-h-[200px]">
+                <Image
                   src={selectedImage.src}
                   alt={selectedImage.alt}
-                  className="max-w-full max-h-[70vh] object-contain rounded"
+                  fill
+                  className="object-contain rounded"
+                  sizes="(max-width: 896px) 100vw, 896px"
+                  unoptimized
                 />
               </div>
             </div>

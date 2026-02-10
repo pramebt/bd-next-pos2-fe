@@ -8,11 +8,15 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/s
 import Sidebar from "./sidebar";
 
 export default function Navbar() {
-  const [name, setName] = useState("");
+    const [name, setName] = useState<string | null>(null);
 
   useEffect(() => {
     const name = localStorage.getItem("next_name");
-    setName(name ?? "");
+    if (name) {
+      setTimeout(() => {
+        setName(name);
+      }, 0);
+    }
   }, []);
 
   return (

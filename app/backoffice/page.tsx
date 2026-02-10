@@ -4,23 +4,17 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LayoutDashboard, ShoppingBag, Utensils, Users } from "lucide-react";
-import { TOKEN_KEY } from "@/lib/config";
+
 
 export default function BackOfficePage() {
   const router = useRouter();
   const [userLevel, setUserLevel] = useState<string>("user");
 
   useEffect(() => {
-    // Check if user is logged in
-    const token = localStorage.getItem(TOKEN_KEY);
-    if (!token) {
-      router.push("/signin");
-      return;
-    }
-
-    // Get user level from localStorage
     const level = localStorage.getItem("next_user_level") || "user";
-    setUserLevel(level);
+    setTimeout(() => {
+      setUserLevel(level);
+    }, 0);
   }, [router]);
 
   const allQuickActions = [
@@ -42,7 +36,7 @@ export default function BackOfficePage() {
     },
     {
       title: "จัดการอาหาร",
-      description: "เพิ่ม แก้ไข อาหาร",
+      description: "เพิ่ม ,แก้ไข,ลบ อาหาร",
       icon: Utensils,
       href: "/backoffice/food",
       color: "bg-orange-500",

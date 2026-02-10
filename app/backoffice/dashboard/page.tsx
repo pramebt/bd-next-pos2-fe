@@ -6,13 +6,12 @@ import axiosInstance from '@/lib/axios';
 import dayjs from "dayjs";
 import { toast } from "sonner";
 import {
-  Calendar,
   Loader2,
   DollarSign,
   TrendingUp,
   BarChart3,
-  LineChart,
   Activity,
+  Calendar,
 } from "lucide-react";
 import {
   Card,
@@ -43,7 +42,7 @@ import {
   Filler,
   TooltipItem,
 } from "chart.js";
-import { Line, Bar } from "react-chartjs-2";
+import { Bar } from "react-chartjs-2";
 import { getErrorMessage } from "@/lib/error-handler";
 
 // Register Chart.js components
@@ -69,22 +68,23 @@ interface MonthReport {
   amount: number;
 }
 
+const ARR_MONTH = [
+  { value: 1, label: "มกราคม" },
+  { value: 2, label: "กุมภาพันธ์" },
+  { value: 3, label: "มีนาคม" },
+  { value: 4, label: "เมษายน" },
+  { value: 5, label: "พฤษภาคม" },
+  { value: 6, label: "มิถุนายน" },
+  { value: 7, label: "กรกฎาคม" },
+  { value: 8, label: "สิงหาคม" },
+  { value: 9, label: "กันยายน" },
+  { value: 10, label: "ตุลาคม" },
+  { value: 11, label: "พฤศจิกายน" },
+  { value: 12, label: "ธันวาคม" },
+] as const;
+
 const DashboardPage = () => {
   const [arrYear, setArrYear] = useState<number[]>([]);
-  const [arrMonth, setArrMonth] = useState([
-    { value: 1, label: "มกราคม" },
-    { value: 2, label: "กุมภาพันธ์" },
-    { value: 3, label: "มีนาคม" },
-    { value: 4, label: "เมษายน" },
-    { value: 5, label: "พฤษภาคม" },
-    { value: 6, label: "มิถุนายน" },
-    { value: 7, label: "กรกฎาคม" },
-    { value: 8, label: "สิงหาคม" },
-    { value: 9, label: "กันยายน" },
-    { value: 10, label: "ตุลาคม" },
-    { value: 11, label: "พฤศจิกายน" },
-    { value: 12, label: "ธันวาคม" },
-  ]);
 
   const today = new Date();
   const currentYear = today.getFullYear();
@@ -151,7 +151,7 @@ const DashboardPage = () => {
 
   const getMonthName = (monthValue: string) => {
     const monthNum = parseInt(monthValue);
-    const month = arrMonth.find((m) => m.value === monthNum);
+    const month = ARR_MONTH.find((m) => m.value === monthNum);
     return month ? month.label : `เดือน ${monthValue}`;
   };
 
@@ -253,7 +253,7 @@ const DashboardPage = () => {
               ฿{totalDayAmount.toLocaleString("th-TH")}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {arrMonth.find((m) => m.value === selectedMonthForDay)?.label} {selectedYearForDay}
+              {ARR_MONTH.find((m) => m.value === selectedMonthForDay)?.label} {selectedYearForDay}
             </p>
           </CardContent>
         </Card>
@@ -297,6 +297,19 @@ const DashboardPage = () => {
             <div className="text-2xl font-bold">{daysWithSales}</div>
             <p className="text-xs text-muted-foreground mt-1">
               จาก {dayData.length} วัน
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">เดือนที่มีการขาย</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{monthsWithSales}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              จาก {monthData.length} เดือน
             </p>
           </CardContent>
         </Card>
@@ -350,7 +363,7 @@ const DashboardPage = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {arrMonth.map((month) => (
+                    {ARR_MONTH.map((month) => (
                       <SelectItem key={month.value} value={month.value.toString()}>
                         {month.label}
                       </SelectItem>

@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, ShoppingBag, User, Lock, Eye, EyeOff } from "lucide-react";
 import { signInSchema } from "@/lib/validations/auth";
-import type { SignInResponse, ApiError } from "@/types/api";
+import type { SignInResponse} from "@/types/api";
 import { AxiosError } from "axios";
 
 export default function SignInPage() {

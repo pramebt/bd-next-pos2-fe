@@ -45,22 +45,23 @@ interface DayReport {
   amount: number;
 }
 
+const ARR_MONTH = [
+  { value: 1, label: "มกราคม" },
+  { value: 2, label: "กุมภาพันธ์" },
+  { value: 3, label: "มีนาคม" },
+  { value: 4, label: "เมษายน" },
+  { value: 5, label: "พฤษภาคม" },
+  { value: 6, label: "มิถุนายน" },
+  { value: 7, label: "กรกฎาคม" },
+  { value: 8, label: "สิงหาคม" },
+  { value: 9, label: "กันยายน" },
+  { value: 10, label: "ตุลาคม" },
+  { value: 11, label: "พฤศจิกายน" },
+  { value: 12, label: "ธันวาคม" },
+] as const;
+
 const ReportSumSalePerDayPage = () => {
   const [arrYear, setArrYear] = useState<number[]>([]);
-  const [arrMonth, setArrMonth] = useState([
-    { value: 1, label: "มกราคม" },
-    { value: 2, label: "กุมภาพันธ์" },
-    { value: 3, label: "มีนาคม" },
-    { value: 4, label: "เมษายน" },
-    { value: 5, label: "พฤษภาคม" },
-    { value: 6, label: "มิถุนายน" },
-    { value: 7, label: "กรกฎาคม" },
-    { value: 8, label: "สิงหาคม" },
-    { value: 9, label: "กันยายน" },
-    { value: 10, label: "ตุลาคม" },
-    { value: 11, label: "พฤศจิกายน" },
-    { value: 12, label: "ธันวาคม" },
-  ]);
   const [selectedYear, setSelectedYear] = useState<number>(
     new Date().getFullYear()
   );
@@ -184,7 +185,7 @@ const ReportSumSalePerDayPage = () => {
                   <SelectValue placeholder="เลือกเดือน" />
                 </SelectTrigger>
                 <SelectContent>
-                  {arrMonth.map((month) => (
+                  {ARR_MONTH.map((month) => (
                     <SelectItem key={month.value} value={month.value.toString()}>
                       {month.label}
                     </SelectItem>
@@ -256,7 +257,7 @@ const ReportSumSalePerDayPage = () => {
           </CardTitle>
           <CardDescription>
             {data.length > 0
-              ? `เดือน${arrMonth.find((m) => m.value === selectedMonth)?.label} ${selectedYear}`
+              ? `เดือน${ARR_MONTH.find((m) => m.value === selectedMonth)?.label} ${selectedYear}`
               : "ยังไม่มีข้อมูล"}
           </CardDescription>
         </CardHeader>
