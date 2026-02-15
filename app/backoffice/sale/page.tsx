@@ -46,13 +46,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import type { Food, SaleTemp, SaleTempDetail, SaleTempInfo, Taste, FoodSize, ApiResponse, PayType } from "@/types/api";
 import { getErrorMessage } from "@/lib/error-handler";
@@ -71,7 +64,6 @@ const SaleTempPage = () => {
   const [payType, setPayType] = useState<PayType>("cash");
   const [inputMoney, setInputMoney] = useState(0);
   const [billUrl, setBillUrl] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tasteLoadingId, setTasteLoadingId] = useState<number | null>(null);
   const [deleteSaleTempId, setDeleteSaleTempId] = useState<number | null>(null);
@@ -786,7 +778,7 @@ const SaleTempPage = () => {
                <div className="text-center py-8 sm:py-12 text-muted-foreground">
                  <Edit className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-3 opacity-50" />
                  <p className="text-sm sm:text-base">ไม่มีรายละเอียด</p>
-                 <p className="text-xs sm:text-sm mt-1">คลิกปุ่ม "เพิ่มรายการ" เพื่อเพิ่มรายละเอียด</p>
+                 <p className="text-xs sm:text-sm mt-1">คลิกปุ่ม &quot;เพิ่มรายการ&quot; เพื่อเพิ่มรายละเอียด</p>
                </div>
              ) : (
                <>
